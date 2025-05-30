@@ -15,9 +15,16 @@ func NewRouter(authHandler *authhandler.AuthHandler) http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 
+	staticServer := StaticFSHandler()
+	r.Mount("/static/", staticServer)
+
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("OK"))
 	})
+
+	pageHndlr := authhandler.NewPageHandler()
+
+	r.Get("/", pageHndlr.ServeHomePage)
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/register", authHandler.Register)
