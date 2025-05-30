@@ -12,8 +12,12 @@ import (
 
 var DB *gorm.DB
 
-func ConnectDatabase() {
-	dsn := "host=localhost user=postgres password=postgres dbname=wonderpicai_db port=5432 sslmode=disable"
+func ConnectDatabase(dsn string) {
+
+	if dsn == "" {
+		log.Fatal("Database DSN cannot be empty")
+		os.Exit(1)
+	}
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -21,7 +25,7 @@ func ConnectDatabase() {
 	})
 
 	if err != nil {
-		log.Fatalf("Failed to connect to the database: %v", err)
+		log.Fatalf("Failed to connect to database: %v\nDSN Used: %s", err, dsn)
 		os.Exit(1)
 	}
 
