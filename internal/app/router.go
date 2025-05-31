@@ -22,7 +22,7 @@ func NewRouter(handlers *allHandlers.ApiHandlers) http.Handler {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/", handlers.PageHandler.ServeHomePage)
+	r.Get("/", handlers.AuthHandler.DisplayTest)
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/register", handlers.AuthHandler.Register)

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/CP-Payne/wonderpicai/internal/service"
+	"github.com/CP-Payne/wonderpicai/web/template/pages"
 	"go.uber.org/zap"
 )
 
@@ -35,6 +36,13 @@ type AuthResponse struct {
 type UserResponse struct {
 	ID       uint   `json:"id"`
 	Username string `json:"username"`
+}
+
+func (h *AuthHandler) DisplayTest(w http.ResponseWriter, r *http.Request) {
+	err := pages.HomePage().Render(r.Context(), w)
+	if err != nil {
+		return
+	}
 }
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {

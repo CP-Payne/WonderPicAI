@@ -7,12 +7,10 @@ import (
 
 type ApiHandlers struct {
 	AuthHandler *AuthHandler
-	PageHandler *PageHandler
 }
 
 func NewApiHandlers(authService service.AuthService, logger *zap.Logger) *ApiHandlers {
 	return &ApiHandlers{
 		AuthHandler: NewAuthHandler(authService, logger),
-		PageHandler: NewPageHandler(),
 	}
 }
