@@ -44,7 +44,7 @@ func getCurrentYear() string {
 templ IndexPage(name string) {
 	@BaseLayout("Home Page") {
 		<div class="bg-black p-6 rounded-lg shadow">
-			<h2 class="text-xl mb-4 text-blue-700">Welcome, { name }!</h2>
+			<h2 class="text-xl mb-4 text-green-600">Welcome, { name }!</h2>
 			<p class="mb-2">This is a page rendered with Templ, styled with Tailwind, and ready for HTMX.</p>
 			<button
 				hx-post="/clicked"
