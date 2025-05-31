@@ -5,14 +5,16 @@ import (
 	"net/http"
 
 	"github.com/CP-Payne/wonderpicai/internal/service"
+	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
 	authService service.AuthService
+	appLogger   *zap.Logger
 }
 
-func NewAuthHandler(authService service.AuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
+func NewAuthHandler(authService service.AuthService, logger *zap.Logger) *AuthHandler {
+	return &AuthHandler{authService: authService, appLogger: logger}
 }
 
 type RegisterRequest struct {

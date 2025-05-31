@@ -6,6 +6,7 @@ import (
 
 	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/port"
+	"go.uber.org/zap"
 )
 
 type AuthService interface {
@@ -14,12 +15,14 @@ type AuthService interface {
 }
 
 type authServiceImpl struct {
-	userRepo port.UserRepository
+	appLogger *zap.Logger
+	userRepo  port.UserRepository
 }
 
-func NewAuthService(userRepo port.UserRepository /*, tokenService port.TokenService */) AuthService {
+func NewAuthService(userRepo port.UserRepository /*, tokenService port.TokenService */, logger *zap.Logger) AuthService {
 	return &authServiceImpl{
-		userRepo: userRepo,
+		userRepo:  userRepo,
+		appLogger: logger,
 		// tokenService: tokenService
 	}
 }
