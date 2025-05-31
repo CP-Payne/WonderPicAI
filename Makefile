@@ -62,11 +62,11 @@ build-dev: css-build templ-generate ## Build the application for development (in
 
 css-build: ## Build Tailwind CSS for production (minified).
 	@echo "Building Tailwind CSS..."
-	@(cd ./web && npx tailwindcss -i $(TAILWIND_INPUT) -o $(TAILWIND_OUTPUT) --minify)
+	@(cd ./web && npx @tailwindcss/cli -i $(TAILWIND_INPUT) -o $(TAILWIND_OUTPUT) --minify)
 
 css-watch: ## Watch Tailwind CSS files for changes and rebuild.
 	@echo "Watching Tailwind CSS for changes... (Press Ctrl+C to stop)"
-	@(cd ./web && npx tailwindcss -i $(TAILWIND_INPUT) -o $(TAILWIND_OUTPUT) --watch)
+	@(cd ./web && npx @tailwindcss/cli -i $(TAILWIND_INPUT) -o $(TAILWIND_OUTPUT) --watch)
 
 templ-generate: ## Generate Go code from Templ files.
 	@echo "Generating Go code from Templ files..."
@@ -78,7 +78,7 @@ templ-watch: ## Watch Templ files for changes and regenerate Go code.
 	@# Adjust the port if your Go app runs on a different one.
 	@templ generate --watch --proxy="http://localhost:8080" --cmd="go run -tags dev cmd/app/main.go" --open-browser=false  
 	@# For ensuring tailindcss has finished generating before reloading browser
-	@#templ generate --watch --proxy="http://localhost:8080" --cmd="cd web && npx tailwindcss -i ./tailwind/input.css -o ./static/css/style.css && cd .. && go run -tags dev cmd/app/main.go" --open-browser=false
+	@#templ generate --watch --proxy="http://localhost:8080" --cmd="cd web && npx @tailwindcss/cli -i ./tailwind/input.css -o ./static/css/style.css && cd .. && go run -tags dev cmd/app/main.go" --open-browser=false
 	@# If not using a Go live reloader with proxy, just use:
 	@# templ generate --watch
 
@@ -91,7 +91,7 @@ install-tools: ## Install necessary Go and Node development tools.
 	@echo "Installing Go tools (templ CLI)..."
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@echo "Installing Node.js dependencies (Tailwind CSS)..."
-	@(cd ./web && npm install -D tailwindcss@^3.0.0 postcss autoprefixer)
+	@(cd ./web && npm install -D tailwindcss @tailwindcss/cli)
 	@echo "Tools installation complete."
 	@echo "Run 'make tidy' to fetch Go module dependencies."
 
