@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-
 	appconfig.LoadConfig()
 	cfg := appconfig.Cfg
 
@@ -22,8 +21,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize application logger: %v", err)
 	}
+
 	defer logger.Sync()
 	zap.ReplaceGlobals(logger)
+
+	logger.Info("Helloooo")
 
 	gormadapter.ConnectDatabase(cfg.Database.DSN, cfg.Server.AppEnv, cfg.Server.LogLevel, logger)
 	db := gormadapter.DB
