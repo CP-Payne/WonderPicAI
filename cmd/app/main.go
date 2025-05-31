@@ -7,7 +7,7 @@ import (
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
 	"github.com/CP-Payne/wonderpicai/internal/app"
 	appconfig "github.com/CP-Payne/wonderpicai/internal/config"
-	authhandler "github.com/CP-Payne/wonderpicai/internal/handler/http"
+	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
 	applogger "github.com/CP-Payne/wonderpicai/internal/logger"
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	"go.uber.org/zap"
@@ -25,7 +25,7 @@ func main() {
 	defer logger.Sync()
 	zap.ReplaceGlobals(logger)
 
-	gormadapter.ConnectDatabase(cfg.Database.DSN)
+	gormadapter.ConnectDatabase(cfg.Database.DSN, cfg.Server.AppEnv, cfg.Server.LogLevel, logger)
 	db := gormadapter.DB
 
 	// tokenProvider, err := jwtadapter.NewJWTTokenProvider(
@@ -42,9 +42,9 @@ func main() {
 
 	authSvc := service.NewAuthService(userRepo, logger)
 
-	authHndlr := authhandler.NewAuthHandler(authSvc, logger)
+	apiHandlers := allHandlers.NewApiHandlers(authSvc, logger)
 
-	router := app.NewRouter(authHndlr, logger)
+	router := app.NewRouter(apiHandlers)
 
 	logger.Info("Server starting",
 		zap.String("address", "http://localhost:"+cfg.Server.Port),
