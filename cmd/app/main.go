@@ -25,7 +25,7 @@ func main() {
 	defer logger.Sync()
 	zap.ReplaceGlobals(logger)
 
-	logger.Info("Helloooo")
+	// logger.Info("Helloooo")
 
 	gormadapter.ConnectDatabase(cfg.Database.DSN, cfg.Server.AppEnv, cfg.Server.LogLevel, logger)
 	db := gormadapter.DB

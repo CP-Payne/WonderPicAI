@@ -1,65 +1,64 @@
 package layout
 
 templ BaseLayout(title string) {
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>{title}</title>
-    <link rel="stylesheet" href="/static/css/style.css" />
-    <script src="/static/js/htmx.min.js" defer></script>
-    <!--   <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+			<title>{ title }</title>
+			<link rel="stylesheet" href="/static/css/style.css"/>
+			<script src="/static/js/htmx.min.js" defer></script>
+			<!--   <script src="https://code.jquery.com/jquery-3.7.1.min.js"
         integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 -->
-</head>
-
-// if nav {
-// @ui.Navigation()
-// }
-// { children... }
-// </body>
-
-<body class=" text-gray-800 bg-black">
-    <header class="bg-black text-white p-4 shadow-md">
-        <div class="container mx-auto">
-            <h1 class="text-2xl font-bold text-yellow-400">{ title }</h1>
-        </div>
-    </header>
-    <main id="content" class="container mx-auto p-4">
-        { children... }
-    </main>
-    <footer class="text-center p-4 mt-8 text-sm text-gray-500">
-        <p>© { getCurrentYear() } My Awesome Project</p>
-    </footer>
-</body>
-
-</html>
+		</head>
+		// if nav {
+		// @ui.Navigation()
+		// }
+		// { children... }
+		// </body>
+		<body class=" text-gray-800 bg-black">
+			<header class="bg-black text-white p-4 shadow-md">
+				<div class="container mx-auto">
+					<h1 class="text-2xl font-bold text-yellow-400">{ title }</h1>
+				</div>
+			</header>
+			<main id="content" class="container mx-auto p-4">
+				{ children... }
+			</main>
+			<footer class="text-center p-4 mt-8 text-sm text-gray-500">
+				<p>© { getCurrentYear() } My Awesome Project</p>
+			</footer>
+		</body>
+	</html>
 }
 
 // You can define simple Go functions directly in .templ files
 // or import them from other packages.
 func getCurrentYear() string {
-return "2024" // Or use time.Now().Year()
+	return "2024" // Or use time.Now().Year()
 }
 
 templ IndexPage(name string) {
-@BaseLayout("Home Page") {
-<div class="bg-black p-6 rounded-lg shadow">
-    <h2 class="text-xl mb-4 text-red-500">Welcome, { name }!</h2>
-    <p class="mb-2">This is a page rendered with Templ, styled with Tailwind, and ready for HTMX.</p>
-    <button hx-post="/clicked" hx-swap="outerHTML"
-        class="bg-black hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
-        Click Me (HTMX)
-    </button>
-</div>
-}
+	@BaseLayout("Home Page") {
+		<div class="bg-black p-6 rounded-lg shadow">
+			<h2 class="text-xl mb-4 text-blue-700">Welcome, { name }!</h2>
+			<p class="mb-2">This is a page rendered with Templ, styled with Tailwind, and ready for HTMX.</p>
+			<button
+				hx-post="/clicked"
+				hx-swap="outerHTML"
+				class="bg-black hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+			>
+				Click Me (HTMX)
+			</button>
+		</div>
+	}
 }
 
 templ ClickedMessage() {
-<div class="text-green-600 font-semibold p-2 border border-green-300 bg-green-50 rounded">
-    Button clicked via HTMX! Thanks for trying.
-</div>
+	<div class="text-green-600 font-semibold p-2 border border-green-300 bg-green-50 rounded">
+		Button clicked via HTMX! Thanks for trying.
+	</div>
 }
