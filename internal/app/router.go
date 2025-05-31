@@ -3,12 +3,12 @@ package app
 import (
 	"net/http"
 
-	authhandler "github.com/CP-Payne/wonderpicai/internal/handler/http"
+	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(authHandler *authhandler.AuthHandler) http.Handler {
+func NewRouter(handlers *allHandlers.ApiHandlers) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -22,13 +22,11 @@ func NewRouter(authHandler *authhandler.AuthHandler) http.Handler {
 		w.Write([]byte("OK"))
 	})
 
-	pageHndlr := authhandler.NewPageHandler()
-
-	r.Get("/", pageHndlr.ServeHomePage)
+	r.Get("/", handlers.PageHandler.ServeHomePage)
 
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/register", authHandler.Register)
-		r.Post("/login", authHandler.Login)
+		r.Post("/register", handlers.AuthHandler.Register)
+		r.Post("/login", handlers.AuthHandler.Login)
 	})
 
 	return r

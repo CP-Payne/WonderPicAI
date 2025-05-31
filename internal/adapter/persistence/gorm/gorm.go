@@ -3,41 +3,64 @@ package gorm
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/CP-Payne/wonderpicai/internal/domain"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
-func ConnectDatabase(dsn string) {
+func ConnectDatabase(dsn, appEnv, logLevel string, appLogger *zap.Logger) {
 
 	if dsn == "" {
-		log.Fatal("Database DSN cannot be empty")
+		appLogger.Fatal("Database DSN cannot be empty")
 		os.Exit(1)
 	}
+
+	newGormLogger := InitializeGormLogger(appEnv, logLevel)
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: newGormLogger,
 	})
 
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v\nDSN Used: %s", err, dsn)
+		appLogger.Fatal("Failed to connect to database", zap.String("DSN", dsn), zap.Error(err))
 		os.Exit(1)
 	}
 
-	log.Println("Database connection established.")
+	appLogger.Info("Database connection established.")
 
 	err = DB.AutoMigrate(&domain.User{})
 	if err != nil {
-		log.Fatalf("Failed to auto-migrate database schema: %v", err)
+		appLogger.Fatal("Failed to auto-migrate database schema", zap.Error(err))
 	}
-	log.Println("Database schema migrated")
+	appLogger.Info("Database schema migrated")
 }
 
 func GetDB() *gorm.DB {
 	return DB
+}
+
+func InitializeGormLogger(appEnv, logLevel string) gormlogger.Interface {
+	gormLogLevel := gormlogger.Warn
+	if appEnv != "production" && logLevel == "debug" {
+		gormLogLevel = gormlogger.Info
+	}
+
+	newGormLogger := gormlogger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags),
+		gormlogger.Config{
+			SlowThreshold:             200 * time.Millisecond,
+			LogLevel:                  gormLogLevel,
+			IgnoreRecordNotFoundError: false,
+			Colorful:                  (appEnv != "production"),
+		},
+	)
+
+	return newGormLogger
 }
