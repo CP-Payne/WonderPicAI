@@ -3,7 +3,7 @@ package auth
 templ LoginForm() {
 	<div class="card-body space-y-2">
 		<h1 class="text-3xl text-secondary">Login</h1>
-		<form class="space-y-4" hx-post="/login" hx-swap="outerHTML">
+		<form class="space-y-4" hx-post="/auth/login" hx-swap="outerHTML">
 			<div>
 				<fieldset class="fieldset">
 					<label class="fieldset-legend">Email</label>

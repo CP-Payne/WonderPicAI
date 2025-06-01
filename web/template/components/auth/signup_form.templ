@@ -3,11 +3,11 @@ package auth
 templ SignupForm() {
 	<div class="card-body space-y-2">
 		<h1 class="text-3xl text-secondary">Signup</h1>
-		<form class="space-y-4" hx-post="/signup" hx-swap="outerHTML">
+		<form class="space-y-4" hx-post="/auth/signup" hx-swap="outerHTML">
 			<div>
 				<fieldset class="fieldset">
 					<label class="fieldset-legend">Username</label>
-					<div class="input">
+					<div class="input validator">
 						<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 							<g
 								stroke-linejoin="round"
@@ -28,13 +28,32 @@ templ SignupForm() {
 							minlength="3"
 							maxlength="30"
 							title="Only letters, numbers or dash"
-							autocomplete="off"
+							autocomplete="username"
+						/>
+					</div>
+					<p class="validator-hint hidden">
+						Must be 3 to 30 characters
+						<br/>
+						containing only letters, numbers or dash
+					</p>
+				</fieldset>
+				// =======================================================================================
+				// Added to prevent password manager from overlapping the validation message
+				// =======================================================================================
+				<fieldset class="fieldset hidden">
+					<label class="fieldset-legend">Username</label>
+					<div class="input">
+						<input
+							type="text"
+							placeholder="Username"
+							autocomplete="username"
 						/>
 					</div>
 				</fieldset>
+				// =======================================================================================
 				<fieldset class="fieldset">
 					<label class="fieldset-legend">Email</label>
-					<div class="input">
+					<div class="input validator">
 						<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 							<g
 								stroke-linejoin="round"
@@ -47,12 +66,13 @@ templ SignupForm() {
 								<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
 							</g>
 						</svg>
-						<input type="email" name="email" placeholder="mail@site.com" required autocomplete="off"/>
+						<input type="email" name="email" placeholder="mail@site.com" required autocomplete="email"/>
 					</div>
+					<div class="validator-hint hidden">Enter valid email address</div>
 				</fieldset>
 				<fieldset class="fieldset">
 					<label class="fieldset-legend">Password</label>
-					<div class="input">
+					<div class="input validator">
 						<svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
 							<g
 								stroke-linejoin="round"
@@ -76,7 +96,7 @@ templ SignupForm() {
 							pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
 							title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
 							name="password"
-							autocomplete="off"
+							autocomplete="password"
 						/>
 						<button
 							type="button"
@@ -93,6 +113,15 @@ templ SignupForm() {
 							</svg>
 						</button>
 					</div>
+					<p class="validator-hint hidden">
+						Must be more than 8 characters, including
+						<br/>
+						At least one number 
+						<br/>
+						At least one lowercase letter 
+						<br/>
+						At least one uppercase letter
+					</p>
 				</fieldset>
 				<fieldset class="fieldset">
 					<label class="fieldset-legend">Confirm Password</label>
@@ -116,11 +145,7 @@ templ SignupForm() {
 							id="confirm-password-input"
 							required
 							placeholder="Confirm Password"
-							minlength="8"
-							pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-							title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
 							name="password"
-							autocomplete="off"
 						/>
 						<button
 							type="button"
@@ -137,6 +162,7 @@ templ SignupForm() {
 							</svg>
 						</button>
 					</div>
+					<p id="confirm-password-error" class="text-red-500 text-xs mt-1"></p>
 				</fieldset>
 			</div>
 			<button type="submit" class="btn btn-primary w-full">Signup<i class="fa-solid fa-arrow-right"></i></button>
@@ -144,4 +170,53 @@ templ SignupForm() {
 		</form>
 	</div>
 	@ViewPasswordJS()
+	@PasswordMatchValidationJS()
+}
+
+templ PasswordMatchValidationJS() {
+	<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password-input');
+            const confirmPasswordInput = document.getElementById('confirm-password-input');
+            const confirmPasswordErrorElement = document.getElementById('confirm-password-error'); // Element to show the error
+
+            if (!passwordInput || !confirmPasswordInput || !confirmPasswordErrorElement) {
+                console.warn('Password match validation: One or more required elements not found.');
+                return; // Exit if elements are missing
+            }
+
+            function validatePasswordsMatch() {
+                if (confirmPasswordInput.value === "") { // Don't show error if confirm is empty
+                    confirmPasswordErrorElement.textContent = "";
+                    confirmPasswordInput.setCustomValidity(""); // Clear potential HTML5 validation error
+                    return;
+                }
+
+                if (passwordInput.value !== confirmPasswordInput.value) {
+                    confirmPasswordErrorElement.textContent = "Passwords do not match.";
+                    // For HTML5 form validation API - prevents submission if you want
+                    // You can remove this if you only want to show the text message
+                    confirmPasswordInput.setCustomValidity("Passwords do not match.");
+                } else {
+                    confirmPasswordErrorElement.textContent = ""; // Clear the error message
+                    confirmPasswordInput.setCustomValidity("");   // Clear potential HTML5 validation error
+                }
+            }
+
+            // Validate when the confirm password field loses focus
+            confirmPasswordInput.addEventListener('blur', validatePasswordsMatch);
+
+            // Optional: Also validate as the user types in the confirm password field
+            // confirmPasswordInput.addEventListener('input', validatePasswordsMatch);
+
+            // Optional: If the main password changes, re-validate the confirm password
+            // (in case the user goes back and changes the first password)
+            passwordInput.addEventListener('input', function() {
+                // Only re-validate if confirm password field is not empty
+                if (confirmPasswordInput.value !== "") {
+                    validatePasswordsMatch();
+                }
+            });
+        });
+    </script>
 }
