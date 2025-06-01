@@ -26,8 +26,9 @@ func NewRouter(handlers *allHandlers.ApiHandlers) http.Handler {
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Get("/login", handlers.AuthHandler.ShowLoginPage)
+		r.Get("/signup", handlers.AuthHandler.ShowSignupPage)
 
-		r.Post("/register", handlers.AuthHandler.HandleRegister)
+		r.Post("/signup", handlers.AuthHandler.HandleSignup)
 		r.Post("/login", handlers.AuthHandler.HandleLogin)
 	})
 

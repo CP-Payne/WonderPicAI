@@ -19,7 +19,7 @@ func NewAuthHandler(authService service.AuthService, logger *zap.Logger) *AuthHa
 	return &AuthHandler{authService: authService, logger: logger}
 }
 
-type RegisterRequest struct {
+type SignupRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
@@ -47,8 +47,16 @@ func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
-	var req RegisterRequest
+func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
+	err := authPages.AuthPage(authComponents.SignupForm()).Render(r.Context(), w)
+	if err != nil {
+		h.logger.Error("Failed to render login page", zap.Error(err))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
+	var req SignupRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
