@@ -5,17 +5,18 @@ import (
 	"net/http"
 
 	"github.com/CP-Payne/wonderpicai/internal/service"
-	"github.com/CP-Payne/wonderpicai/web/template/pages"
+	authComponents "github.com/CP-Payne/wonderpicai/web/template/components/auth"
+	authPages "github.com/CP-Payne/wonderpicai/web/template/pages/auth"
 	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
 	authService service.AuthService
-	appLogger   *zap.Logger
+	logger      *zap.Logger
 }
 
 func NewAuthHandler(authService service.AuthService, logger *zap.Logger) *AuthHandler {
-	return &AuthHandler{authService: authService, appLogger: logger}
+	return &AuthHandler{authService: authService, logger: logger}
 }
 
 type RegisterRequest struct {
@@ -38,14 +39,15 @@ type UserResponse struct {
 	Username string `json:"username"`
 }
 
-func (h *AuthHandler) DisplayTest(w http.ResponseWriter, r *http.Request) {
-	err := pages.HomePage().Render(r.Context(), w)
+func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
+	err := authPages.AuthPage(authComponents.LoginForm()).Render(r.Context(), w)
 	if err != nil {
-		return
+		h.logger.Error("Failed to render login page", zap.Error(err))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
-func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -65,7 +67,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

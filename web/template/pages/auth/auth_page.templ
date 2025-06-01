@@ -1,0 +1,25 @@
+package auth
+
+import "github.com/CP-Payne/wonderpicai/web/template"
+
+templ AuthPage(formComponent templ.Component) {
+	@template.Base(false) {
+		<div class="w-full min-h-screen p-4 flex items-center justify-center bg-gradient-to-br from-primary to-secondary /* bg-base-200*/">
+			<a href="/" aria-label="Go back to landing page" class="btn btn-ghost btn-circle fixed  top-4 left-4 z-50 shadow-lg bg-base-100 backdrop-blur-sm hover:bg-base-100/65">
+				<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"></path>
+				</svg>
+			</a>
+			<div class="card w-full max-w-md bg-base-100 shadow-xl p-6 sm:p-8">
+				<div class="text-center mb-6">
+					<a href="/" class="inline-block">
+						// I could add a WonderPicAI logo component here:
+						// @components.WonderPicLogo()
+						<span class="text-3xl font-bold text-primary">WonderPicAI</span>
+					</a>
+				</div>
+				@formComponent
+			</div>
+		</div>
+	}
+}

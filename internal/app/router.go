@@ -22,11 +22,13 @@ func NewRouter(handlers *allHandlers.ApiHandlers) http.Handler {
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/", handlers.AuthHandler.DisplayTest)
+	r.Get("/", handlers.LandingHandler.ShowLandingPage)
 
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/register", handlers.AuthHandler.Register)
-		r.Post("/login", handlers.AuthHandler.Login)
+		r.Get("/login", handlers.AuthHandler.ShowLoginPage)
+
+		r.Post("/register", handlers.AuthHandler.HandleRegister)
+		r.Post("/login", handlers.AuthHandler.HandleLogin)
 	})
 
 	return r

@@ -6,11 +6,13 @@ import (
 )
 
 type ApiHandlers struct {
-	AuthHandler *AuthHandler
+	AuthHandler    *AuthHandler
+	LandingHandler *LandingHandler
 }
 
 func NewApiHandlers(authService service.AuthService, logger *zap.Logger) *ApiHandlers {
 	return &ApiHandlers{
-		AuthHandler: NewAuthHandler(authService, logger),
+		AuthHandler:    NewAuthHandler(authService, logger),
+		LandingHandler: NewLandingHandler(logger),
 	}
 }

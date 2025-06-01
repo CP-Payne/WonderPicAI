@@ -1,8 +1,8 @@
-package layout
+package template
 
-import "github.com/CP-Payne/wonderpicai/web/template/components"
+import "github.com/CP-Payne/wonderpicai/web/template/components/navigation"
 
-templ BaseLayout(useNav bool) {
+templ Base(useNav bool) {
 	<!DOCTYPE html>
 	<html lang="en" data-theme="forest">
 		<head>
@@ -11,12 +11,14 @@ templ BaseLayout(useNav bool) {
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
 			<title>WonderPicAI</title>
 			<link rel="stylesheet" href="/static/css/style.css"/>
+			<link rel="stylesheet" href="/static/assets/fontawesome/css/solid.css"/>
+			<link rel="stylesheet" href="/static/assets/fontawesome/css/fontawesome.css"/>
 			<script src="/static/js/htmx.min.js" defer></script>
 			<!-- <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/> -->
 		</head>
-		<body>
+		<body class="w-full h-[100vh] bg-red-300">
 			if useNav {
-				@components.Navbar()
+				@navigation.Navbar()
 			}
 			{ children... }
 		</body>
