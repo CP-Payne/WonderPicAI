@@ -19,6 +19,7 @@
     --text-3xl: 1.875rem;
     --text-3xl--line-height: calc(2.25 / 1.875);
     --font-weight-bold: 700;
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
     --blur-sm: 8px;
     --default-transition-duration: 150ms;
@@ -1414,6 +1415,11 @@
   .z-50 {
     z-index: 50;
   }
+  .drawer-content {
+    grid-column-start: 2;
+    grid-row-start: 1;
+    min-width: calc(0.25rem * 0);
+  }
   .filter {
     display: flex;
     flex-wrap: wrap;
@@ -1827,6 +1833,12 @@
   .text-base-content {
     color: var(--color-base-content);
   }
+  .text-error {
+    color: var(--color-error);
+  }
+  .text-error-content {
+    color: var(--color-error-content);
+  }
   .text-primary {
     color: var(--color-primary);
   }
@@ -1921,6 +1933,10 @@
   .ease-in-out {
     --tw-ease: var(--ease-in-out);
     transition-timing-function: var(--ease-in-out);
+  }
+  .ease-out {
+    --tw-ease: var(--ease-out);
+    transition-timing-function: var(--ease-out);
   }
   .btn-sm {
     --fontsize: 0.75rem;
