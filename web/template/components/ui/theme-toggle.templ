@@ -3,7 +3,7 @@ package ui
 templ ThemeToggle() {
 	<label class="swap swap-rotate">
 		<!-- this hidden checkbox controls the state -->
-		<input type="checkbox" class="theme-controller" value="cupcake"/>
+		<input type="checkbox" class="theme-controller" value="lofi"/>
 		<!-- sun icon -->
 		<svg
 			class="swap-off h-10 w-10 fill-current"
@@ -25,4 +25,80 @@ templ ThemeToggle() {
 			></path>
 		</svg>
 	</label>
+}
+
+templ ThemePersistenceJS() {
+	<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggleCheckbox = document.querySelector('input.theme-controller');
+            const htmlEl = document.documentElement;
+
+            // --- Configuration ---
+            // The theme that is active when the checkbox's 'value' attribute is matched
+            // For example, if your checkbox is: <input type="checkbox" class="theme-controller" value="cupcake"/>
+            // then 'themeWhenChecked' should be "cupcake".
+            const themeWhenChecked = themeToggleCheckbox ? themeToggleCheckbox.value : "light"; // Default to "light" if no checkbox or no value
+
+            // The theme that is active when the checkbox is UNCHECKED.
+            // This is your "other" theme, often a dark theme.
+            const themeWhenUnchecked = "forest"; // Or "night", "dracula", etc.
+                                           // Make sure this theme is enabled in your tailwind.config.js
+
+            const localStorageKey = 'theme';
+            // --- End Configuration ---
+
+            // Function to apply a theme and update the checkbox state
+            function applyTheme(themeName) {
+                htmlEl.setAttribute('data-theme', themeName);
+                localStorage.setItem(localStorageKey, themeName);
+
+                if (themeToggleCheckbox) {
+                    // If the current theme is the one that should be active when the checkbox is checked,
+                    // then ensure the checkbox IS checked.
+                    themeToggleCheckbox.checked = (themeName === themeWhenChecked);
+                }
+            }
+
+            // Determine and apply the initial theme
+            let initialTheme = localStorage.getItem(localStorageKey);
+
+            if (!initialTheme) { // No theme saved in localStorage
+                // Check OS preference if the checkbox exists to determine a sensible default
+                if (themeToggleCheckbox && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    initialTheme = themeWhenUnchecked; // Default to the "unchecked" theme (usually dark)
+                } else {
+                    initialTheme = themeWhenChecked;   // Default to the "checked" theme (usually light)
+                }
+            }
+            applyTheme(initialTheme);
+
+
+            // Event listener for the theme toggle checkbox
+            if (themeToggleCheckbox) {
+                themeToggleCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // When checkbox is checked, it means we want the theme specified in its 'value'
+                        // which we've stored in 'themeWhenChecked'.
+                        applyTheme(themeWhenChecked);
+                    } else {
+                        // When checkbox is unchecked, we want the 'other' theme.
+                        applyTheme(themeWhenUnchecked);
+                    }
+                });
+            }
+
+            // Optional: Listen for OS theme changes to update if no user preference is set
+            // This is useful if the user hasn't manually toggled the theme yet.
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                // Only apply OS preference if the user hasn't explicitly set a theme via the toggle
+                if (!localStorage.getItem(localStorageKey)) {
+                    if (e.matches) {
+                        applyTheme(themeWhenUnchecked);
+                    } else {
+                        applyTheme(themeWhenChecked);
+                    }
+                }
+            });
+        });
+    </script>
 }

@@ -1,6 +1,7 @@
 package template
 
 import "github.com/CP-Payne/wonderpicai/web/template/components/navigation"
+import "github.com/CP-Payne/wonderpicai/web/template/components/ui"
 
 templ Base(useNav bool) {
 	<!DOCTYPE html>
@@ -21,6 +22,7 @@ templ Base(useNav bool) {
 				@navigation.Navbar()
 			}
 			{ children... }
+			@ui.ThemePersistenceJS()
 		</body>
 	</html>
 }
