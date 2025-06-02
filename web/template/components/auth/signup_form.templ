@@ -1,11 +1,13 @@
 package auth
 
-import VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+import (
+VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+)
 
 templ SignupForm(data VM.SignupFormComponentData) {
-<div class="card-body space-y-2">
+<div id="signup-card" class="card-body space-y-2">
 	<h1 class="text-3xl text-secondary">Signup</h1>
-	<form class="space-y-4" hx-post="/auth/signup" hx-swap="outerHTML">
+	<form class="space-y-4" hx-post="/auth/signup" hx-swap="outerHTML" hx-target="#signup-card">
 		<div>
 			<fieldset class="fieldset">
 				<label class="fieldset-legend">Username</label>
@@ -17,8 +19,9 @@ templ SignupForm(data VM.SignupFormComponentData) {
 							<circle cx="12" cy="7" r="4"></circle>
 						</g>
 					</svg>
-					<input type="text" required placeholder="Username" pattern="[A-Za-z][A-Za-z0-9\-]*" minlength="3"
-						maxlength="30" title="Only letters, numbers or dash" autocomplete="username" />
+					<input type="text" required placeholder="Username" name="username" value={data.Form.Username}
+						pattern="[A-Za-z][A-Za-z0-9\-]*" minlength="3" maxlength="30"
+						title="Only letters, numbers or dash" autocomplete="username" />
 				</div>
 				if err, ok := data.Errors["username"]; ok {
 				<p class="text-error text-xs mt-1">{err}</p>
@@ -50,7 +53,8 @@ templ SignupForm(data VM.SignupFormComponentData) {
 							<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
 						</g>
 					</svg>
-					<input type="email" name="email" placeholder="mail@site.com" required autocomplete="email" />
+					<input type="email" name="email" placeholder="mail@site.com" value={data.Form.Email} required
+						autocomplete="email" />
 				</div>
 				if err, ok := data.Errors["email"]; ok {
 				<p class="text-error text-xs mt-1">{err}</p>
@@ -70,10 +74,9 @@ templ SignupForm(data VM.SignupFormComponentData) {
 							<circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
 						</g>
 					</svg>
-					<input type="password" id="password-input" required placeholder="Password" minlength="8"
-						pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
-						title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-						name="password" autocomplete="password" />
+					<input type="password" id="password-input" required placeholder="Password"
+						pattern={PasswordValidationRegex()} title="Must be more than 8 characters, including number, lowercase letter, uppercase letter and
+						special character" name="password" autocomplete="password" />
 					<button type="button" data-target-input="password-input"
 						class="toggle-password-visibility btn btn-ghost btn-sm  text-base-content hover:bg-base-300"
 						aria-label="Toggle password visibility">
@@ -104,6 +107,8 @@ templ SignupForm(data VM.SignupFormComponentData) {
 					At least one lowercase letter
 					<br />
 					At least one uppercase letter
+					<br />
+					At least one special character
 				</p>
 				}
 			</fieldset>
@@ -120,7 +125,7 @@ templ SignupForm(data VM.SignupFormComponentData) {
 						</g>
 					</svg>
 					<input type="password" id="confirm-password-input" required placeholder="Confirm Password"
-						name="password" />
+						name="confirmPassword" />
 					<button type="button" data-target-input="confirm-password-input"
 						class="toggle-password-visibility btn btn-ghost btn-sm  text-base-content hover:bg-base-300"
 						aria-label="Toggle password visibility">
@@ -156,6 +161,10 @@ templ SignupForm(data VM.SignupFormComponentData) {
 		}
 	</form>
 </div>
-@ViewPasswordJS()
-@PasswordMatchValidationJS()
+
 }
+
+func PasswordValidationRegex() string {
+// return templ.SafeCSS("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?:{}\\|<>]).{8,}")
+	return `^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*\\\(\\\),.?:\\\{\\\}\\\\\|<>]).{8,}$`
+		}
