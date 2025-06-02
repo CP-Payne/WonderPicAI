@@ -35,6 +35,14 @@ func ConnectDatabase(dsn, appEnv, logLevel string, appLogger *zap.Logger) {
 
 	appLogger.Info("Database connection established.")
 
+	if appEnv != "production" {
+
+		err = DB.Migrator().DropTable(&domain.User{})
+		if err != nil {
+			appLogger.Error("Failed to drop table users", zap.Error(err))
+		}
+	}
+
 	err = DB.AutoMigrate(&domain.User{})
 	if err != nil {
 		appLogger.Fatal("Failed to auto-migrate database schema", zap.Error(err))

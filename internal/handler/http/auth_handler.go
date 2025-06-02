@@ -8,6 +8,7 @@ import (
 	authComponents "github.com/CP-Payne/wonderpicai/web/template/components/auth"
 	authPages "github.com/CP-Payne/wonderpicai/web/template/pages/auth"
 	"github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -36,8 +37,8 @@ type AuthResponse struct {
 }
 
 type UserResponse struct {
-	ID       uint   `json:"id"`
-	Username string `json:"username"`
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
 }
 
 func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
