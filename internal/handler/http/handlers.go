@@ -9,6 +9,7 @@ import (
 type ApiHandlers struct {
 	AuthHandler    *AuthHandler
 	LandingHandler *LandingHandler
+	ErrorHandler   *ErrorHandler
 }
 
 func NewApiHandlers(authService service.AuthService, logger *zap.Logger) *ApiHandlers {
@@ -18,5 +19,6 @@ func NewApiHandlers(authService service.AuthService, logger *zap.Logger) *ApiHan
 	return &ApiHandlers{
 		AuthHandler:    NewAuthHandler(authService, logger, appValidator),
 		LandingHandler: NewLandingHandler(logger),
+		ErrorHandler:   NewErrorHandler(logger),
 	}
 }
