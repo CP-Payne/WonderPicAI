@@ -21,10 +21,10 @@ func (r *gormUserRepository) Create(user *domain.User) error {
 	return result.Error
 }
 
-func (r *gormUserRepository) GetByUsername(username string) (*domain.User, error) {
+func (r *gormUserRepository) GetByEmail(email string) (*domain.User, error) {
 	var user domain.User
 
-	result := r.db.Where("username = ?", username).First(&user)
+	result := r.db.Where("email= ?", email).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil
