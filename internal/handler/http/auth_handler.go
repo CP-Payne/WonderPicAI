@@ -7,6 +7,7 @@ import (
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	authComponents "github.com/CP-Payne/wonderpicai/web/template/components/auth"
 	authPages "github.com/CP-Payne/wonderpicai/web/template/pages/auth"
+	"github.com/CP-Payne/wonderpicai/web/template/viewmodel"
 	"go.uber.org/zap"
 )
 
@@ -48,7 +49,18 @@ func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
-	err := authPages.AuthPage(authComponents.SignupForm()).Render(r.Context(), w)
+
+	// Viewmodel empty on initial load
+	vm := viewmodel.SignupFormComponentData{
+		Form: viewmodel.SignupFormData{
+			Username: "",
+			Email:    "",
+		},
+		Errors: make(map[string]string),
+		Error:  "",
+	}
+
+	err := authPages.AuthPage(authComponents.SignupForm(vm)).Render(r.Context(), w)
 	if err != nil {
 		h.logger.Error("Failed to render login page", zap.Error(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
