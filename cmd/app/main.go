@@ -47,7 +47,7 @@ func main() {
 	router := app.NewRouter(apiHandlers)
 
 	logger.Info("Server starting",
-		zap.String("address", "0.0.0.0:"+cfg.Server.Port),
+		zap.String("address", "http://localhost:"+cfg.Server.Port),
 		zap.String("app_env", cfg.Server.AppEnv),
 	)
 
