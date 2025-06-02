@@ -3,14 +3,16 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/port"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type AuthService interface {
-	Register(username, password string) (*domain.User, error)
+	Register(username, email, password string) (*domain.User, error)
 	Login(username, password string) (*domain.User, string, error)
 }
 
@@ -27,25 +29,34 @@ func NewAuthService(userRepo port.UserRepository /*, tokenService port.TokenServ
 	}
 }
 
-func (s *authServiceImpl) Register(username, password string) (*domain.User, error) {
+func (s *authServiceImpl) Register(username, email, password string) (*domain.User, error) {
 
-	if username == "" || password == "" {
-		return nil, errors.New("username and password are required")
+	if username == "" || email == "" || password == "" {
+		return nil, errors.New("username, email and password are required")
 	}
 
-	existingUser, err := s.userRepo.GetByUsername(username)
+	existingUser, err := s.userRepo.GetByEmail(email)
 	if err != nil {
 		return nil, fmt.Errorf("error checking for existing user: %w", err)
 	}
 	if existingUser != nil {
-		return nil, errors.New("user with this username already exists") // TODO: Create custom domain error domain.ErrUserAlreadyExists
+		return nil, errors.New("user with this email already exists") // TODO: Create custom domain error domain.ErrUserAlreadyExists
 	}
 
-	// TODO: Hash password
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		return nil, fmt.Errorf("error checking for existing user: %w", err)
+	}
 
 	user := &domain.User{
+		BaseModel: domain.BaseModel{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
 		Username: username,
-		Password: password, // TODO: Store hashed password
+		Email:    email,
+		Password: hashedPassword,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
@@ -54,15 +65,18 @@ func (s *authServiceImpl) Register(username, password string) (*domain.User, err
 
 	// Don't return password, even if it is hashed
 	user.Password = ""
+
+	// TODO: Generate token, Update return to also return the token
+
 	return user, nil
 }
 
-func (s *authServiceImpl) Login(username, password string) (*domain.User, string, error) {
-	if username == "" || password == "" {
+func (s *authServiceImpl) Login(email, password string) (*domain.User, string, error) {
+	if email == "" || password == "" {
 		return nil, "", errors.New("username and password are required")
 	}
 
-	user, err := s.userRepo.GetByUsername((username))
+	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
 		return nil, "", fmt.Errorf("error fetching user: %w", err)
 	}
