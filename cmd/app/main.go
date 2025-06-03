@@ -38,7 +38,7 @@ func main() {
 	// 	log.Fatalf("Failed to initialize token provider: %v", err)
 	// }
 
-	userRepo := gormadapter.NewGormUserRepository(db)
+	userRepo := gormadapter.NewGormUserRepository(db, logger)
 
 	authSvc := service.NewAuthService(userRepo, logger)
 

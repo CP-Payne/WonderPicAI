@@ -174,7 +174,7 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	user, err := h.authService.Register(req.Username, req.Email, req.Password)
+	user, _, err := h.authService.Register(req.Username, req.Email, req.Password)
 	if err != nil {
 		// TODO: implement error handling to differentiate different types of errors
 		http.Error(w, err.Error(), http.StatusInternalServerError)
