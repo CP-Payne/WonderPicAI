@@ -6,5 +6,8 @@ import (
 
 type TokenService interface {
 	GenerateToken(claims jwt.Claims) (string, error)
-	ValidateToken(string) (*jwt.Token, error)
+	// TODO: Decouple from jwt.Token by returning a custom claims struct (e.g., *CustomClaims).
+	// This will make the port more independent of the underlying JWT library.
+	// Will revisit once all necessary claims for middleware/services are finalized.
+	ValidateToken(token string) (*jwt.Token, error)
 }

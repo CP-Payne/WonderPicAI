@@ -9,14 +9,12 @@ import (
 
 type tokenService struct {
 	secret string
-	aud    string
 	iss    string
 }
 
-func NewTokenService(secret, aud, iss string) port.TokenService {
+func NewTokenService(secret, iss string) port.TokenService {
 	return &tokenService{
 		secret: secret,
-		aud:    aud,
 		iss:    iss,
 	}
 }
@@ -31,13 +29,14 @@ func (ts *tokenService) GenerateToken(claims jwt.Claims) (string, error) {
 }
 
 func (ts *tokenService) ValidateToken(token string) (*jwt.Token, error) {
-	return jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	return jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method %v", t.Header["alg"])
 		}
 		return []byte(ts.secret), nil
 	}, jwt.WithExpirationRequired(),
-		jwt.WithAudience(ts.aud),
+		// Audience and issuer in this implementation are the same
+		jwt.WithAudience(ts.iss),
 		jwt.WithIssuer(ts.iss),
 		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}))
 }

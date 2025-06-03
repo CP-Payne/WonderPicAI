@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
+	"github.com/CP-Payne/wonderpicai/internal/adapter/tokenservice"
 	"github.com/CP-Payne/wonderpicai/internal/app"
 	appconfig "github.com/CP-Payne/wonderpicai/internal/config"
 	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
@@ -28,19 +29,11 @@ func main() {
 	gormadapter.ConnectDatabase(cfg.Database.DSN, cfg.Server.AppEnv, cfg.Server.LogLevel, logger)
 	db := gormadapter.DB
 
-	// tokenProvider, err := jwtadapter.NewJWTTokenProvider(
-	// 	cfg.JWT.SecretKey,
-	// 	cfg.JWT.Issuer,
-	// 	cfg.JWT.ExpiryMinutes,
-	// logger
-	// ) // MODIFIED
-	// if err != nil {
-	// 	log.Fatalf("Failed to initialize token provider: %v", err)
-	// }
+	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
 
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 
-	authSvc := service.NewAuthService(userRepo, logger)
+	authSvc := service.NewAuthService(userRepo, tokenService, logger)
 
 	apiHandlers := allHandlers.NewApiHandlers(authSvc, logger)
 
