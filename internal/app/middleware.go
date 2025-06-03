@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"net/http"
 
 	httpHandler "github.com/CP-Payne/wonderpicai/internal/handler/http"
@@ -19,7 +18,7 @@ func CustomRecoverer(logger *zap.Logger) func(http.Handler) http.Handler {
 
 					message := "An unexpected problem occured. We are looking into it."
 
-					httpHandler.HxRedirect(w, r, fmt.Sprintf("/error?statusCode=%d&errorID=%s&message=%s", http.StatusInternalServerError, errorID, message))
+					httpHandler.HxRedirectErrorPage(w, r, http.StatusInternalServerError, errorID, message)
 				}
 			}()
 
