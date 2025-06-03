@@ -6,13 +6,15 @@ import (
 	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 )
 
-func NewRouter(handlers *allHandlers.ApiHandlers) http.Handler {
+func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	r.Use(CustomRecoverer(logger))
+	// r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 
 	staticServer := StaticFSHandler()

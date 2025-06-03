@@ -57,7 +57,6 @@ func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
-
 	// Viewmodel empty on initial load
 	vm := viewmodel.SignupFormComponentData{
 		Form: viewmodel.SignupFormData{
@@ -75,6 +74,7 @@ func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
 func lowerFirst(s string) string {
 	if s == "" {
 		return s
@@ -85,7 +85,6 @@ func lowerFirst(s string) string {
 }
 
 func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
-
 	if err := r.ParseForm(); err != nil {
 		h.logger.Error("Failed to parse form", zap.Error(err))
 		http.Error(w, "Bad Request: Could not parse form data", http.StatusBadRequest)
