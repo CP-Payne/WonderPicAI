@@ -53,9 +53,10 @@ func (r *gormUserRepository) GetByEmail(email string) (*domain.User, error) {
 	result := r.db.Where("email= ?", email).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, domain.ErrUserNotFound
 		}
-		return nil, result.Error
+		r.logger.Error("Failed to get user by email", zap.String("email", email), zap.Error(result.Error))
+		return nil, fmt.Errorf("database error fetching user by email: %w", result.Error)
 	}
 	return &user, nil
 }
