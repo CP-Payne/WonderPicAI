@@ -8,10 +8,12 @@ import (
 
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	authComponents "github.com/CP-Payne/wonderpicai/web/template/components/auth"
+	"github.com/CP-Payne/wonderpicai/web/template/components/ui"
 	authPages "github.com/CP-Payne/wonderpicai/web/template/pages/auth"
 	"github.com/CP-Payne/wonderpicai/web/template/viewmodel"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/rs/xid"
 	"go.uber.org/zap"
 )
 
@@ -144,14 +146,27 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 		} else {
 			h.logger.Error("Validation error", zap.Error(err))
 			vm.Error = "An unexpected error occurred during validation."
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, `<div id="form-errors" class="text-error">%s</div>`, vm.Error)
+			toastData := viewmodel.ToastComponentData{
+				Message: vm.Error,
+				Type:    viewmodel.ToastError,
+				ToastID: xid.New().String(),
+			}
+
+			err := ui.ToastNotification(toastData).Render(r.Context(), w)
+			if err != nil {
+				h.logger.Error("Failed to render toast notification", zap.Error(err))
+				// No message = default
+				HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+				return
+
+			}
 			return
 		}
 
 		err = authComponents.SignupForm(vm).Render(r.Context(), w)
 		if err != nil {
 			h.logger.Error("Failed to render login page", zap.Error(err))
+			HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -164,12 +179,9 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 		// TODO: implement error handling to differentiate different types of errors
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	h.logger.Debug("response user", zap.Any("User", user))
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(AuthResponse{
-		User: UserResponse{ID: user.ID, Username: user.Username},
-	})
+	// TODO: Set token and redirect user to home page
 }
 
 func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
