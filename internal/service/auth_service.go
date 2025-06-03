@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/CP-Payne/wonderpicai/internal/config"
 	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/port"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -17,15 +19,16 @@ type AuthService interface {
 }
 
 type authServiceImpl struct {
-	logger   *zap.Logger
-	userRepo port.UserRepository
+	logger       *zap.Logger
+	userRepo     port.UserRepository
+	tokenService port.TokenService
 }
 
-func NewAuthService(userRepo port.UserRepository /*, tokenService port.TokenService */, logger *zap.Logger) AuthService {
+func NewAuthService(userRepo port.UserRepository, tokenService port.TokenService, logger *zap.Logger) AuthService {
 	return &authServiceImpl{
-		userRepo: userRepo,
-		logger:   logger.With(zap.String("component", "AuthService")),
-		// tokenService: tokenService
+		userRepo:     userRepo,
+		logger:       logger.With(zap.String("component", "AuthService")),
+		tokenService: tokenService,
 	}
 }
 
@@ -70,9 +73,29 @@ func (s *authServiceImpl) Register(username, email, password string) (*domain.Us
 	// Don't return password, even if it is hashed
 	userToCreate.Password = ""
 
-	// TODO: Generate token, Update return to also return the token
+	s.logger.Info("User creation successfull", zap.String("email", userToCreate.Email), zap.String("UserID", userToCreate.ID.String()))
 
-	return userToCreate, "", nil
+	claims := jwt.MapClaims{
+		"sub": userToCreate.ID,
+		"exp": time.Now().Add(time.Duration(config.Cfg.JWT.ExpiryMinutes) * time.Minute).Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": config.Cfg.JWT.Issuer,
+		// Same as issuer in this implementation
+		"aud": config.Cfg.JWT.Issuer,
+	}
+
+	token, err := s.tokenService.GenerateToken(claims)
+	if err != nil {
+		s.logger.Error("Failed to create JWT token after successfull user registration",
+			zap.String("email", userToCreate.Email),
+			zap.String("UserID", userToCreate.ID.String()),
+			zap.Error(err),
+		)
+		return userToCreate, "", fmt.Errorf("failed to generate jwt token via local token service: %w", err)
+	}
+
+	return userToCreate, token, nil
 }
 
 func (s *authServiceImpl) Login(email, password string) (*domain.User, string, error) {

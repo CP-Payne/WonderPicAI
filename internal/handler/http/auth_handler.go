@@ -2,11 +2,14 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
-	"unicode"
+	"time"
 
+	"github.com/CP-Payne/wonderpicai/internal/config"
+	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/service"
+	"github.com/CP-Payne/wonderpicai/internal/validation"
 	authComponents "github.com/CP-Payne/wonderpicai/web/template/components/auth"
 	"github.com/CP-Payne/wonderpicai/web/template/components/ui"
 	authPages "github.com/CP-Payne/wonderpicai/web/template/pages/auth"
@@ -24,7 +27,7 @@ type AuthHandler struct {
 }
 
 func NewAuthHandler(authService service.AuthService, logger *zap.Logger, validate *validator.Validate) *AuthHandler {
-	return &AuthHandler{authService: authService, logger: logger, validate: validate}
+	return &AuthHandler{authService: authService, logger: logger.With(zap.String("component", "AuthHandler")), validate: validate}
 }
 
 type SignupRequest struct {
@@ -77,15 +80,6 @@ func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func lowerFirst(s string) string {
-	if s == "" {
-		return s
-	}
-	runes := []rune(s)
-	runes[0] = unicode.ToLower(runes[0])
-	return string(runes)
-}
-
 func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		h.logger.Error("Failed to parse form", zap.Error(err))
@@ -111,41 +105,12 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 
 	err := h.validate.Struct(req)
 	if err != nil {
-		if validationErrors, ok := err.(validator.ValidationErrors); ok {
-			for _, fieldError := range validationErrors {
-				fieldName := fieldError.Field()
-				tag := fieldError.Tag()
+		fieldErrors, generalValError := validation.TranslateValidationErrors(err)
+		vm.Errors = fieldErrors
+		vm.Error = generalValError
 
-				var errorMessage string
-
-				switch tag {
-				case "required":
-					errorMessage = fmt.Sprintf("%s is required.", fieldName)
-				case "alphanum":
-					errorMessage = fmt.Sprintf("%s must contain only letters and numbers.", fieldName)
-				case "email":
-					errorMessage = "Please enter a valid email address."
-				case "min":
-					errorMessage = fmt.Sprintf("%s must be at least %s characters long.", fieldName, fieldError.Param())
-				case "max":
-					errorMessage = fmt.Sprintf("%s cannot be longer than %s characters.", fieldName, fieldError.Param())
-				case "eqfield":
-					errorMessage = "Passwords do not match."
-				case "passwordcomplexity":
-					errorMessage = "Password must be at least 8 characters long and include an uppercase letter, lowercase letter, number, and special character."
-				default:
-					errorMessage = fmt.Sprintf("%s is invalid.", fieldName)
-				}
-
-				if existing, ok := vm.Errors[fieldName]; ok {
-					vm.Errors[lowerFirst(fieldName)] = existing + " " + errorMessage
-				} else {
-					vm.Errors[lowerFirst(fieldName)] = errorMessage
-				}
-			}
-		} else {
-			h.logger.Error("Validation error", zap.Error(err))
-			vm.Error = "An unexpected error occurred during validation."
+		if vm.Error != "" {
+			h.logger.Error("General validation error", zap.String("error", vm.Error), zap.Error(err))
 			toastData := viewmodel.ToastComponentData{
 				Message: vm.Error,
 				Type:    viewmodel.ToastError,
@@ -157,31 +122,60 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 				h.logger.Error("Failed to render toast notification", zap.Error(err))
 				// No message = default
 				HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
-				return
-
+				// Don't return yet, first render the form with other potential validation errors
 			}
-			return
 		}
+
+		h.logger.Warn("Signup validation errors", zap.Any("errors", vm.Errors))
 
 		err = authComponents.SignupForm(vm).Render(r.Context(), w)
 		if err != nil {
 			h.logger.Error("Failed to render login page", zap.Error(err))
 			HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+		// Toast and Form now ready to be returned
 		return
-
 	}
 
-	user, _, err := h.authService.Register(req.Username, req.Email, req.Password)
+	// -- Validation Passed ---
+
+	// Clear validation errors
+	vm.Errors = make(map[string]string)
+	vm.Error = ""
+
+	user, token, err := h.authService.Register(req.Username, req.Email, req.Password)
 	if err != nil {
-		// TODO: implement error handling to differentiate different types of errors
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if errors.Is(err, domain.ErrEmailAlreadyExists) {
+			vm.Errors["email"] = "This email address is already registered."
+		} else {
+			vm.Error = "An error occured while creating your account. Please try again"
+			h.logger.Error("Unexpected error from AuthService.Register", zap.Error(err))
+		}
+		// Consider using error page or Toast for the general, unexpected error
+		err = authComponents.SignupForm(vm).Render(r.Context(), w)
+		if err != nil {
+			h.logger.Error("Failed to render login page", zap.Error(err))
+			HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
 	}
-	h.logger.Debug("response user", zap.Any("User", user))
 
 	// TODO: Set token and redirect user to home page
+	h.logger.Info("User registered successfully", zap.String("userID", user.ID.String()), zap.String("email", user.Email))
+
+	// Set cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		MaxAge:   config.Cfg.JWT.ExpiryMinutes * 60,
+		Expires:  time.Now().Add(time.Duration(config.Cfg.JWT.ExpiryMinutes) * time.Minute),
+	})
+
+	HxRedirect(w, r, "/")
 }
 
 func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
