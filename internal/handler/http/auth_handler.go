@@ -102,9 +102,6 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 		vm.Errors = fieldErrors
 		vm.Error = generalValError
 
-		// TODO:
-		vm.Error = "REMOVE THIS"
-
 		if vm.Error != "" {
 			h.logger.Error("General signup validation error", zap.String("error", vm.Error), zap.Error(err))
 
