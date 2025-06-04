@@ -248,7 +248,7 @@ templ SignupForm(data VM.SignupFormComponentData) {
 				</span>
 			</p>
 			if data.Error != "" {
-				<p class="text-error text-xs mt-1">{ data.Error }</p>
+				<p class="text-error text-xs mt-1 w-full text-center">{ data.Error }</p>
 			}
 		</form>
 	</div>
@@ -258,4 +258,3 @@ func PasswordValidationRegex() string {
 	// return templ.SafeCSS("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?:{}\\|<>]).{8,}")
 	return `^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*\\\(\\\),.?:\\\{\\\}\\\\\|<>]).{8,}$`
 }
-

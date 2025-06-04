@@ -1,21 +1,17 @@
 package http
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 
-	"github.com/CP-Payne/wonderpicai/internal/config"
 	"github.com/CP-Payne/wonderpicai/internal/domain"
+	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	"github.com/CP-Payne/wonderpicai/internal/validation"
 	authComponents "github.com/CP-Payne/wonderpicai/web/template/components/auth"
-	"github.com/CP-Payne/wonderpicai/web/template/components/ui"
 	authPages "github.com/CP-Payne/wonderpicai/web/template/pages/auth"
 	"github.com/CP-Payne/wonderpicai/web/template/viewmodel"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"github.com/rs/xid"
 	"go.uber.org/zap"
 )
@@ -38,22 +34,20 @@ type SignupRequest struct {
 }
 
 type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type AuthResponse struct {
-	User  UserResponse `json:"user"`
-	Token string       `json:"token,omitempty"` // omitempty for registration response
-}
-
-type UserResponse struct {
-	ID       uuid.UUID `json:"id"`
-	Username string    `json:"username"`
+	Email    string `validate:"required,email"`
+	Password string `validate:"required"`
 }
 
 func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
-	err := authPages.AuthPage(authComponents.LoginForm()).Render(r.Context(), w)
+	// Viewmodel empty on initial load
+	vm := viewmodel.LoginFormComponentData{
+		Form: viewmodel.LoginFormData{
+			Email: "",
+		},
+		Errors: make(map[string]string),
+		Error:  "",
+	}
+	err := authPages.AuthPage(authComponents.LoginForm(vm)).Render(r.Context(), w)
 	if err != nil {
 		h.logger.Error("Failed to render login page", zap.Error(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -83,7 +77,7 @@ func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		h.logger.Error("Failed to parse form", zap.Error(err))
-		http.Error(w, "Bad Request: Could not parse form data", http.StatusBadRequest)
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, xid.New().String(), "")
 		return
 	}
 
@@ -93,7 +87,6 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 		Password:        r.FormValue("password"),
 		ConfirmPassword: r.FormValue("confirmPassword"),
 	}
-	// TODO: Do validations and Generate View
 	vm := viewmodel.SignupFormComponentData{
 		Form: viewmodel.SignupFormData{
 			Username: req.Username,
@@ -109,32 +102,29 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 		vm.Errors = fieldErrors
 		vm.Error = generalValError
 
-		if vm.Error != "" {
-			h.logger.Error("General validation error", zap.String("error", vm.Error), zap.Error(err))
-			toastData := viewmodel.ToastComponentData{
-				Message: vm.Error,
-				Type:    viewmodel.ToastError,
-				ToastID: xid.New().String(),
-			}
+		// TODO:
+		vm.Error = "REMOVE THIS"
 
-			err := ui.ToastNotification(toastData).Render(r.Context(), w)
-			if err != nil {
-				h.logger.Error("Failed to render toast notification", zap.Error(err))
-				// No message = default
-				HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
-				// Don't return yet, first render the form with other potential validation errors
+		if vm.Error != "" {
+			h.logger.Error("General signup validation error", zap.String("error", vm.Error), zap.Error(err))
+
+			toastID, loadErr := response.LoadErrorToast(w, r, h.logger, vm.Error)
+			if loadErr != nil {
+				response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, toastID, "")
+				return
 			}
+			// Load form with validation errors (if any) before ending request processing
 		}
 
 		h.logger.Warn("Signup validation errors", zap.Any("errors", vm.Errors))
 
-		err = authComponents.SignupForm(vm).Render(r.Context(), w)
-		if err != nil {
-			h.logger.Error("Failed to render login page", zap.Error(err))
-			HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		loadErr := response.LoadSignupForm(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
 			return
 		}
-		// Toast and Form now ready to be returned
+
+		// Toast and SignupForm written to response and ready to end request processing
 		return
 	}
 
@@ -152,50 +142,111 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 			vm.Error = "An error occured while creating your account. Please try again"
 			h.logger.Error("Unexpected error from AuthService.Register", zap.Error(err))
 		}
-		// Consider using error page or Toast for the general, unexpected error
-		err = authComponents.SignupForm(vm).Render(r.Context(), w)
-		if err != nil {
-			h.logger.Error("Failed to render login page", zap.Error(err))
-			HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		loadErr := response.LoadSignupForm(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
 			return
 		}
+		return
 	}
 
-	// TODO: Set token and redirect user to home page
 	h.logger.Info("User registered successfully", zap.String("userID", user.ID.String()), zap.String("email", user.Email))
 
-	// Set cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "auth_token",
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   r.TLS != nil,
-		MaxAge:   config.Cfg.JWT.ExpiryMinutes * 60,
-		Expires:  time.Now().Add(time.Duration(config.Cfg.JWT.ExpiryMinutes) * time.Minute),
-	})
+	response.SetAuthCookie(w, r, token)
 
-	HxRedirect(w, r, "/")
+	response.HxRedirect(w, r, "/")
 }
 
 func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	var req LoginRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invlid request body", http.StatusBadRequest)
+	if err := r.ParseForm(); err != nil {
+		h.logger.Error("Failed to parse form", zap.Error(err))
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, xid.New().String(), "")
 		return
 	}
 
-	user, token, err := h.authService.Login(req.Username, req.Password)
+	req := LoginRequest{
+		Email:    r.FormValue("email"),
+		Password: r.FormValue("password"),
+	}
+
+	vm := viewmodel.LoginFormComponentData{
+		Form: viewmodel.LoginFormData{
+			Email: req.Email,
+		},
+		Errors: make(map[string]string),
+		Error:  "",
+	}
+
+	err := h.validate.Struct(req) // This seems to be throwing a null pointer
 	if err != nil {
-		// TODO: Differentiate errors
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		fieldErrors, generalValError := validation.TranslateValidationErrors(err)
+		vm.Errors = fieldErrors
+		vm.Error = generalValError
+
+		if vm.Error != "" {
+			h.logger.Error("General login validation error", zap.String("error", vm.Error), zap.Error(err))
+
+			toastID, loadErr := response.LoadErrorToast(w, r, h.logger, vm.Error)
+			if loadErr != nil {
+				response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, toastID, "")
+				return
+			}
+
+		}
+
+		h.logger.Warn("Login validation errors", zap.Any("errors", vm.Errors))
+
+		loadErr := response.LoadLoginForm(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+		// Toast and Form loaded and ready to be returned
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(AuthResponse{
-		User:  UserResponse{ID: user.ID, Username: user.Username},
-		Token: token,
-	})
+	// -- Validation Passed ---
+	//
+	// Clear validation errors
+	vm.Errors = make(map[string]string)
+	vm.Error = ""
+
+	user, token, err := h.authService.Login(req.Email, req.Password)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidCredentials) {
+			vm.Error = "Invalid Credentials"
+
+			loadErr := response.LoadLoginForm(w, r, h.logger, vm)
+			if loadErr != nil {
+				response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+				return
+			}
+
+			return
+		}
+
+		vm.Error = "Something went wrong. Please try again."
+
+		h.logger.Error("General login validation error", zap.Error(err))
+
+		toastID, loadErr := response.LoadErrorToast(w, r, h.logger, vm.Error)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, toastID, "")
+			return
+		}
+
+		loadErr = response.LoadLoginForm(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+
+		// Toast and LoginForm rendered (loaded) end request processing
+		return
+	}
+
+	h.logger.Info("User authenticated successfully", zap.String("userID", user.ID.String()))
+
+	response.SetAuthCookie(w, r, token)
+	response.HxRedirect(w, r, "/")
 }

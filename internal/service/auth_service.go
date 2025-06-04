@@ -15,7 +15,7 @@ import (
 
 type AuthService interface {
 	Register(username, email, password string) (*domain.User, string, error)
-	Login(username, password string) (*domain.User, string, error)
+	Login(email, password string) (*domain.User, string, error)
 }
 
 type authServiceImpl struct {
@@ -99,27 +99,37 @@ func (s *authServiceImpl) Register(username, email, password string) (*domain.Us
 }
 
 func (s *authServiceImpl) Login(email, password string) (*domain.User, string, error) {
-	if email == "" || password == "" {
-		return nil, "", errors.New("username and password are required")
-	}
-
 	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
-		return nil, "", fmt.Errorf("error fetching user: %w", err)
-	}
-	if user == nil {
-		return nil, "", errors.New("invalid username or password")
-	}
-
-	// TODO: Compare hashed password
-
-	if user.Password != password {
-		return nil, "", errors.New("invalid username or password")
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return nil, "", domain.ErrInvalidCredentials
+		}
+		return nil, "", fmt.Errorf("failed authenticating user: %w", err)
 	}
 
-	// TODO: generate jwt token using tokenservice
+	if ok := checkPasswordHash(password, user.Password); !ok {
+		return nil, "", domain.ErrInvalidCredentials
+	}
 
-	token := "some dummy token until tokenservice implemented"
+	claims := jwt.MapClaims{
+		"sub": user.ID,
+		"exp": time.Now().Add(time.Duration(config.Cfg.JWT.ExpiryMinutes) * time.Minute).Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": config.Cfg.JWT.Issuer,
+		// Same as issuer in this implementation
+		"aud": config.Cfg.JWT.Issuer,
+	}
+
+	token, err := s.tokenService.GenerateToken(claims)
+	if err != nil {
+		s.logger.Error("Failed to create JWT token after successfull user authentication",
+			zap.String("email", user.Email),
+			zap.String("UserID", user.ID.String()),
+			zap.Error(err),
+		)
+		return user, "", fmt.Errorf("failed to generate jwt token via local token service: %w", err)
+	}
 
 	return user, token, nil
 }

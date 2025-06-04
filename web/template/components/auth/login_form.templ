@@ -1,9 +1,13 @@
 package auth
 
-templ LoginForm() {
-	<div class="card-body space-y-2">
+import (
+	VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+)
+
+templ LoginForm(data VM.LoginFormComponentData) {
+	<div id="login-card" class="card-body space-y-2">
 		<h1 class="text-3xl text-accent">Login</h1>
-		<form class="space-y-4" hx-post="/auth/login" hx-swap="outerHTML">
+		<form class="space-y-4" hx-post="/auth/login" hx-swap="outerHTML" hx-target="#login-card">
 			<div>
 				<fieldset class="fieldset">
 					<label class="fieldset-legend">Email</label>
@@ -20,9 +24,13 @@ templ LoginForm() {
 								<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
 							</g>
 						</svg>
-						<input type="email" name="email" placeholder="mail@site.com" required autocomplete="email"/>
+						<input type="email" name="email" placeholder="mail@site.com" value={ data.Form.Email } required autocomplete="email"/>
 					</div>
-					<div class="validator-hint hidden">Enter valid email address</div>
+					if err, ok := data.Errors["email"]; ok {
+						<p class="text-error text-xs mt-1">{ err }</p>
+					} else {
+						<div class="validator-hint hidden">Enter valid email address</div>
+					}
 				</fieldset>
 				<fieldset class="fieldset">
 					<label class="fieldset-legend">Password</label>
@@ -64,6 +72,12 @@ templ LoginForm() {
 							</svg>
 						</button>
 					</div>
+					if err, ok := data.Errors["password"]; ok {
+						<p class="text-error text-xs mt-1">{ err }</p>
+					}
+					if data.Error != "" {
+						<p class="text-error text-xs mt-1">{ data.Error }</p>
+					}
 				</fieldset>
 			</div>
 			<button type="submit" class="btn btn-primary w-full">Login <i class="fa-solid fa-arrow-right"></i></button>
