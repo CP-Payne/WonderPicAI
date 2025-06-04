@@ -1,0 +1,48 @@
+package ui
+
+var ToastManagerJSHandle = templ.NewOnceHandle()
+
+templ ToastManagerJS() {
+	@ToastManagerJSHandle.Once() {
+		<script>
+                const ShowToast = function(toastId) {
+                    const toastElement = document.getElementById(toastId);
+
+                    if (toastElement && !toastElement.dataset.initialized) {
+                        toastElement.dataset.initialized = 'true'; // Mark as initialized
+
+                        void toastElement.offsetHeight;
+
+                        // Trigger fade-in and slide-in animation
+                        setTimeout(function() {
+                            toastElement.classList.remove('opacity-0', 'translate-y-[-20px]');
+                            toastElement.classList.add('opacity-100', 'translate-y-0');
+                        }, 10); // A very small delay can sometimes help ensure transition applies
+
+                        // Remove the toast after a few seconds
+                        setTimeout(function() {
+                            if (toastElement && toastElement.parentElement) { // Check if still in DOM
+                                toastElement.classList.remove('opacity-100', 'translate-y-0'); // Start fade out visual
+                                toastElement.classList.add('opacity-0', 'translate-y-[-20px]'); // Optional: slide out too
+
+                                // Wait for fade out transition to complete before removing from DOM
+                                toastElement.addEventListener('transitionend', function handleTransitionEnd() {
+                                    if (toastElement.parentElement) {
+                                        toastElement.remove();
+                                    }
+                                    toastElement.removeEventListener('transitionend', handleTransitionEnd); // Clean up listener
+                                });
+
+                                // Fallback removal if transitionend doesn't fire (e.g., display:none interrupts it)
+                                setTimeout(function() {
+                                    if (toastElement.parentElement) {
+                                        toastElement.remove();
+                                    }
+                                }, 350); // Slightly longer than transition duration (300ms)
+                            }
+                        }, 5000); // Disappear after 5 seconds (this is the start of the fade-out process)
+                    }
+                }
+        </script>
+	}
+}
