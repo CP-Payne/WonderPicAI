@@ -33,7 +33,20 @@ func CompletedImageCard(image VM.Image) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"card bg-base-100 shadow-xl group rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full relative\"><img class=\"absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300\" src=\"https://picsum.photos/seed/picsum/500/500\" alt=\"Generated Image\"><div class=\"absolute inset-0 flex flex-col justify-end items-center text-center p-3\n                    bg-gradient-to-t from-black/70 via-black/40 to-transparent\n                    opacity-0 group-hover:opacity-100 transition-opacity duration-300\"><div class=\"card-actions justify-center\"><button class=\"btn btn-primary btn-xs\">View</button> <button class=\"btn btn-ghost btn-xs text-neutral-content hover:bg-white/20\">Delete</button></div></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"card bg-base-100 shadow-xl group rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full relative\"><img class=\"absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300\" src=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("data:image/png;base64," + image.Data)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/gen/images.templ`, Line: 12, Col: 52}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" alt=\"Generated Image\"><div class=\"absolute inset-0 flex flex-col justify-end items-center text-center p-3\n                    bg-gradient-to-t from-black/70 via-black/40 to-transparent\n                    opacity-0 group-hover:opacity-100 transition-opacity duration-300\"><div class=\"card-actions justify-center\"><button class=\"btn btn-primary btn-xs\">View</button> <button class=\"btn btn-ghost btn-xs text-neutral-content hover:bg-white/20\">Delete</button></div></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -57,12 +70,12 @@ func FailedImageCard(image VM.Image) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var2 == nil {
-			templ_7745c5c3_Var2 = templ.NopComponent
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-error/10 dark:bg-error/20\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-16 w-16 text-error mb-3\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg><p class=\"font-semibold text-error text-lg\">Generation Failed</p><p class=\"text-xs text-base-content/70 mt-1 flex flex-col\">Something went wrong. <button class=\"btn btn-xs btn-link text-accent p-0 mt-1\" hx-post=\"/retry-generation/\" hx-target=\"closest .card\" hx-swap=\"outerHTML\">Try again?</button></p></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-error/10 dark:bg-error/20\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-16 w-16 text-error mb-3\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg><p class=\"font-semibold text-error text-lg\">Generation Failed</p><p class=\"text-xs text-base-content/70 mt-1 flex flex-col\">Something went wrong. <button class=\"btn btn-xs btn-link text-accent p-0 mt-1\" hx-post=\"/retry-generation/\" hx-target=\"closest .card\" hx-swap=\"outerHTML\">Try again?</button></p></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -86,12 +99,12 @@ func PendingImageCard(image VM.Image) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var3 == nil {
-			templ_7745c5c3_Var3 = templ.NopComponent
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div hx-swap-oob=\"afterbegin:#gallery\"><div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-info/10 dark:bg-info/20\"><span class=\"loading loading-spinner loading-lg text-primary mb-3\"></span><p class=\"font-medium text-primary text-lg\">Generating Image...</p><p class=\"text-xs text-base-content/70 mt-1\">Please wait a moment.</p></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div hx-swap-oob=\"afterbegin:#gallery\"><div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-info/10 dark:bg-info/20\"><span class=\"loading loading-spinner loading-lg text-primary mb-3\"></span><p class=\"font-medium text-primary text-lg\">Generating Image...</p><p class=\"text-xs text-base-content/70 mt-1\">Please wait a moment.</p></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

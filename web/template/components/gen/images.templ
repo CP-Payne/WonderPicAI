@@ -9,7 +9,7 @@ templ CompletedImageCard(image VM.Image) {
 <div class="card bg-base-100 shadow-xl group rounded-lg overflow-hidden aspect-square">
     <div class="w-full h-full relative">
         <img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            src="https://picsum.photos/seed/picsum/500/500" alt="Generated Image" />
+            src={"data:image/png;base64,"+image.Data} alt="Generated Image" />
         <div class="absolute inset-0 flex flex-col justify-end items-center text-center p-3
                     bg-gradient-to-t from-black/70 via-black/40 to-transparent
                     opacity-0 group-hover:opacity-100 transition-opacity duration-300">

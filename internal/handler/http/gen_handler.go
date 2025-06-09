@@ -1,6 +1,8 @@
 package http
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -32,6 +34,11 @@ type GenRequest struct {
 	ImageCount int    `validate:"required,number,gte=1"`
 }
 
+type ImageUpdateWebhookRequest struct {
+	PromptID string   `json:"prompt_id"`
+	Images   []string `json:"images"`
+}
+
 func NewGenHandler(logger *zap.Logger, validate *validator.Validate, genService service.GenService) *GenHandler {
 	return &GenHandler{
 		logger:     logger.With(zap.String("component", "GenHandler")),
@@ -59,7 +66,7 @@ func (h *GenHandler) ShowGenPage(w http.ResponseWriter, r *http.Request) {
 	for _, prompt := range userPrompts {
 		for _, img := range prompt.Images {
 			images = append(images, viewmodel.Image{
-				Data:   string(img.ImageData),
+				Data:   base64.StdEncoding.EncodeToString(img.ImageData),
 				Status: img.Status.String(),
 			})
 		}
@@ -187,6 +194,51 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// h.logger.Debug("prompt received from service", zap.Any("prompt", prompt))
-	// Load gallery
+}
+
+func (h *GenHandler) HandleImageCompletionWebhook(w http.ResponseWriter, r *http.Request) {
+
+	request := ImageUpdateWebhookRequest{}
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		h.logger.Error("failed decoding webhook image update request", zap.Error(err))
+		return
+	}
+
+	// h.logger.Debug("DATA RECEIVED FROM WEBHOOK", zap.Any("data", request))
+
+	if request.PromptID == "" {
+		h.logger.Warn("no promptID received from webhook")
+		return
+	}
+
+	if len(request.Images) == 0 {
+
+		h.logger.Warn("no images to update received from webhook")
+		return
+	}
+
+	imagesDecoded := [][]byte{}
+
+	for _, imageData := range request.Images {
+		decoded, err := base64.StdEncoding.DecodeString(imageData)
+		if err != nil {
+			h.logger.Error("image base64 could not be decoded", zap.Error(err))
+			return
+		}
+		imagesDecoded = append(imagesDecoded, decoded)
+	}
+
+	externalPromptID, err := uuid.Parse(request.PromptID)
+	if err != nil {
+		h.logger.Warn("failed to convert promptID into uuid")
+		return
+	}
+
+	_, err = h.genService.UpdatePlaceholderImages(externalPromptID, imagesDecoded)
+	if err != nil {
+		h.logger.Warn("failed to update placeholder images")
+		return
+	}
+
 }

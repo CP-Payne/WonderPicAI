@@ -29,6 +29,7 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger) http.Handl
 
 	r.Get("/gen", handlers.GenHandler.ShowGenPage)
 	r.Post("/gen", handlers.GenHandler.HandleGenerationCreate)
+	r.Post("/gen/update", handlers.GenHandler.HandleImageCompletionWebhook)
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Get("/login", handlers.AuthHandler.ShowLoginPage)

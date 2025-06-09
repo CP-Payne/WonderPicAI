@@ -11,9 +11,11 @@ import (
 	"go.uber.org/zap"
 )
 
+// TODO: Pass in context from handler
 type GenService interface {
 	GenerateImage(userID uuid.UUID, promptData *PromptData) (*domain.Prompt, error)
 	GetAllPrompts(userID uuid.UUID) ([]domain.Prompt, error)
+	UpdatePlaceholderImages(externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error)
 }
 
 type PromptData struct {
@@ -92,4 +94,15 @@ func (s *genService) GetAllPrompts(userID uuid.UUID) ([]domain.Prompt, error) {
 	}
 
 	return prompts, nil
+}
+
+func (s *genService) UpdatePlaceholderImages(externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error) {
+
+	prompt, err := s.promptRepo.UpdatePlaceholderImages(context.Background(), externalPromptID, images)
+	if err != nil {
+		s.logger.Error("Failed to update image placeholders", zap.String("ExternalPromptID", externalPromptID.String()), zap.Error(err))
+		return nil, fmt.Errorf("failed to update image placeholders using prompt repository: %w", err)
+	}
+
+	return prompt, nil
 }
