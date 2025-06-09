@@ -1,0 +1,15 @@
+package gen
+
+
+import (
+VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+)
+
+templ Gallery(galleryData VM.GalleryComponentData) {
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" id="gallery">
+    @CompletedImageCard(VM.Image{})
+    @FailedImageCard(VM.Image{})
+    @PendingImageCard(VM.Image{})
+</div>
+}

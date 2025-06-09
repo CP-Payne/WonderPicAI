@@ -27,6 +27,8 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger) http.Handl
 	r.Get("/", handlers.LandingHandler.ShowLandingPage)
 	r.Get("/error", handlers.ErrorHandler.ServeGenericErrorPage)
 
+	r.Get("/gen", handlers.GenHandler.ShowGenPage)
+
 	r.Route("/auth", func(r chi.Router) {
 		r.Get("/login", handlers.AuthHandler.ShowLoginPage)
 		r.Get("/signup", handlers.AuthHandler.ShowSignupPage)
