@@ -61,3 +61,14 @@ func (r *gormPromptRepository) Create(ctx context.Context, prompt *domain.Prompt
 
 	return prompt, nil
 }
+
+func (r *gormPromptRepository) FindAllByUser(ctx context.Context, userID uuid.UUID) ([]domain.Prompt, error) {
+	var prompts []domain.Prompt
+
+	err := r.db.WithContext(ctx).Preload("Images").Order("created_at desc").Where("user_id = ?", userID).Find(&prompts).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed retrieving prompts from repo: %w", err)
+	}
+
+	return prompts, nil
+}

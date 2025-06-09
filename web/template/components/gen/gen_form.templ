@@ -7,7 +7,7 @@ VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
 
 templ GenForm(data VM.GenFormComponentData) {
 
-<form class="space-y-6">
+<form hx-post="/gen" hx-swap="outerHTML" class="space-y-6">
     <div>
         <h2 class="text-xl font-semibold mb-4 text-secondary">Image Generation Settings</h2>
     </div>
@@ -18,11 +18,12 @@ templ GenForm(data VM.GenFormComponentData) {
         </label>
         <textarea id="prompt-textarea" name="prompt"
             class="textarea textarea-border textarea-lg h-32 resize-none focus:outline-none"
-            placeholder="e.g. A majestic cat astronaut exploring a vibrant nebula"></textarea>
+            placeholder="e.g. A majestic cat astronaut exploring a vibrant nebula"
+            required>{data.Form.Prompt}</textarea>
 
-        <label class="label">
-            <span class="label-text-alt">Describe what you want to see. Be descriptive!</span>
-        </label>
+        if err, ok := data.Errors["prompt"]; ok {
+        <p class="text-error text-xs mt-1">{err}</p>
+        }
     </div>
     // --------------
 
@@ -33,6 +34,10 @@ templ GenForm(data VM.GenFormComponentData) {
         </label>
         <input id="image-count-input" type="number" name="image_count" placeholder="e.g., 4"
             class="input input-bordered" value="1" min="1" max="10" />
+
+        if err, ok := data.Errors["imageCount"]; ok {
+        <p class="text-error text-xs mt-1">{err}</p>
+        }
 
     </div>
 

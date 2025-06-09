@@ -91,7 +91,7 @@ func PendingImageCard(image VM.Image) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-info/10 dark:bg-info/20\"><span class=\"loading loading-spinner loading-lg text-primary mb-3\"></span><p class=\"font-medium text-primary text-lg\">Generating Image...</p><p class=\"text-xs text-base-content/70 mt-1\">Please wait a moment.</p></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div hx-swap-oob=\"afterbegin:#gallery\"><div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-info/10 dark:bg-info/20\"><span class=\"loading loading-spinner loading-lg text-primary mb-3\"></span><p class=\"font-medium text-primary text-lg\">Generating Image...</p><p class=\"text-xs text-base-content/70 mt-1\">Please wait a moment.</p></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

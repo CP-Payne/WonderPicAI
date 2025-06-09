@@ -33,7 +33,8 @@ func (s Status) String() string {
 type Prompt struct {
 	BaseModel
 	ExternalPromptID uuid.UUID `gorm:"type:uuid;uniqueIndex;not null"`
-	Cost             int       `gorm:"not null"`
+	UserID           uuid.UUID
+	Cost             int `gorm:"not null"`
 	ImageCount       int
 	Width            int
 	Height           int

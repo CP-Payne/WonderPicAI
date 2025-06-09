@@ -12,7 +12,8 @@ import (
 )
 
 type GenService interface {
-	GenerateImage(*PromptData) (*domain.Prompt, error)
+	GenerateImage(userID uuid.UUID, promptData *PromptData) (*domain.Prompt, error)
+	GetAllPrompts(userID uuid.UUID) ([]domain.Prompt, error)
 }
 
 type PromptData struct {
@@ -41,7 +42,7 @@ func NewGenService(logger *zap.Logger, genClient port.ImageGeneration, promptRep
 	}
 }
 
-func (s *genService) GenerateImage(data *PromptData) (*domain.Prompt, error) {
+func (s *genService) GenerateImage(userID uuid.UUID, data *PromptData) (*domain.Prompt, error) {
 
 	clientReqData := port.ImageGenerationInput{
 		Prompt:     data.Prompt,
@@ -63,6 +64,7 @@ func (s *genService) GenerateImage(data *PromptData) (*domain.Prompt, error) {
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
+		UserID:           userID,
 		ExternalPromptID: externalPromptID,
 		Cost:             1,
 		ImageCount:       data.ImageCount,
@@ -80,4 +82,14 @@ func (s *genService) GenerateImage(data *PromptData) (*domain.Prompt, error) {
 
 	return promptCreated, nil
 
+}
+
+func (s *genService) GetAllPrompts(userID uuid.UUID) ([]domain.Prompt, error) {
+	prompts, err := s.promptRepo.FindAllByUser(context.Background(), userID)
+	if err != nil {
+		s.logger.Error("Failed to retrieve user prompts from repository", zap.String("userID", userID.String()), zap.Error(err))
+		return nil, fmt.Errorf("failed to retrieve user prompts from prompt repository: %w", err)
+	}
+
+	return prompts, nil
 }

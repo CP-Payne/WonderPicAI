@@ -2,7 +2,7 @@ package viewmodel
 
 type GenFormData struct {
 	Prompt string
-	Number string
+	Number int
 }
 
 type GenFormComponentData struct {
