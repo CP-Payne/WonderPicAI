@@ -1,7 +1,11 @@
 package port
 
-import "github.com/CP-Payne/wonderpicai/internal/domain"
+import (
+	"context"
+
+	"github.com/CP-Payne/wonderpicai/internal/domain"
+)
 
 type PromptRepository interface {
-	Create(prompt *domain.Prompt) error
+	Create(ctx context.Context, prompt *domain.Prompt) (*domain.Prompt, error)
 }

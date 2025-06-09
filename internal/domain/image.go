@@ -6,15 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type GenerationStatus int
+type Status int
 
 const (
-	Failed GenerationStatus = iota
+	Failed Status = iota
 	Pending
+	PartiallyCompleted
 	Completed
 )
 
-func (s GenerationStatus) String() string {
+func (s Status) String() string {
 	switch s {
 	case Failed:
 		return "Failed"
@@ -22,6 +23,8 @@ func (s GenerationStatus) String() string {
 		return "Pending"
 	case Completed:
 		return "Completed"
+	case PartiallyCompleted:
+		return "PartiallyCompleted"
 	default:
 		return "Unknown"
 	}
@@ -29,18 +32,19 @@ func (s GenerationStatus) String() string {
 
 type Prompt struct {
 	BaseModel
-	PromptID     uuid.UUID `gorm:"type:uuid;uniqueIndex;not null"`
-	Cost         int       `gorm:"not null"`
-	NumberImages int
-	Width        int
-	Height       int
-	Images       []Image `gorm:"foreignKey:PromptID;references:PromptID"`
-	Status       GenerationStatus
-	LastChecked  time.Time
+	ExternalPromptID uuid.UUID `gorm:"type:uuid;uniqueIndex;not null"`
+	Cost             int       `gorm:"not null"`
+	ImageCount       int
+	Width            int
+	Height           int
+	Images           []Image `gorm:"foreignKey:PromptID;references:ID"`
+	Status           Status
+	LastChecked      time.Time
 }
 
 type Image struct {
 	BaseModel
 	PromptID  uuid.UUID `gorm:"type:uuid;index;not null"`
 	ImageData []byte    `gorm:"type:bytea"`
+	Status    Status
 }
