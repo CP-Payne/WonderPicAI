@@ -28,3 +28,19 @@ func LoadErrorToast(w http.ResponseWriter, r *http.Request, logger *zap.Logger, 
 
 	return toastData.ToastID, nil
 }
+
+func LoadSuccessToast(w http.ResponseWriter, r *http.Request, logger *zap.Logger, message string) (toastID string, loadErr error) {
+	toastData := viewmodel.ToastComponentData{
+		Message: message,
+		Type:    viewmodel.ToastSuccess,
+		ToastID: xid.New().String(),
+	}
+
+	err := ui.ToastNotification(toastData).Render(r.Context(), w)
+	if err != nil {
+		logger.Error("Failed to render toast component", zap.Error(err), zap.String("toastID", toastData.ToastID))
+		return toastData.ToastID, err
+	}
+
+	return toastData.ToastID, nil
+}

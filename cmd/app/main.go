@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/CP-Payne/wonderpicai/internal/adapter/generation/comfylite"
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
 	"github.com/CP-Payne/wonderpicai/internal/adapter/tokenservice"
 	"github.com/CP-Payne/wonderpicai/internal/app"
@@ -30,17 +31,22 @@ func main() {
 	db := gormadapter.DB
 
 	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
+	// TODO: Move ip to .env
+	genClient := comfylite.NewClient(logger, "http://172.24.192.1:8081")
 
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
+	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
+	imageRepo := gormadapter.NewGormImageRepository(db, logger)
 
 	authSvc := service.NewAuthService(userRepo, tokenService, logger)
+	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo)
 
-	apiHandlers := allHandlers.NewApiHandlers(authSvc, logger)
+	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
 
 	router := app.NewRouter(apiHandlers, logger)
 
 	logger.Info("Server starting",
-		zap.String("address", "http://localhost:"+cfg.Server.Port),
+		zap.String("address", "http://0.0.0.0:"+cfg.Server.Port),
 		zap.String("app_env", cfg.Server.AppEnv),
 	)
 

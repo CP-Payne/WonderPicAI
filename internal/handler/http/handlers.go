@@ -10,9 +10,10 @@ type ApiHandlers struct {
 	AuthHandler    *AuthHandler
 	LandingHandler *LandingHandler
 	ErrorHandler   *ErrorHandler
+	GenHandler     *GenHandler
 }
 
-func NewApiHandlers(authService service.AuthService, logger *zap.Logger) *ApiHandlers {
+func NewApiHandlers(authService service.AuthService, genService service.GenService, logger *zap.Logger) *ApiHandlers {
 
 	appValidator := validation.New()
 
@@ -20,5 +21,6 @@ func NewApiHandlers(authService service.AuthService, logger *zap.Logger) *ApiHan
 		AuthHandler:    NewAuthHandler(authService, logger, appValidator),
 		LandingHandler: NewLandingHandler(logger),
 		ErrorHandler:   NewErrorHandler(logger),
+		GenHandler:     NewGenHandler(logger, appValidator, genService),
 	}
 }

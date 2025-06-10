@@ -5,4 +5,5 @@ type User struct {
 	Username string `gorm:"not null"`
 	Email    string `gorm:"uniqueIndex;not null"`
 	Password string `gorm:"not null"`
+	// Prompts  []Prompt `gorm:"foreignKey:UserID;references:ID"`
 }

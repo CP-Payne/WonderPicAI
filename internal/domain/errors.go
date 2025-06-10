@@ -8,4 +8,5 @@ var (
 	ErrInvalidCredentials      = errors.New("invalid credentials") // TODO: Consider moving to service layer
 	ErrInsufficientPermissions = errors.New("insufficient perfmissions")
 	ErrDuplicateEntry          = errors.New("entry with unique field already exists")
+	ErrImageNotFound           = errors.New("image not found")
 )
