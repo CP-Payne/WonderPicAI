@@ -12,6 +12,7 @@ type GenFormComponentData struct {
 }
 
 type Image struct {
+	ID     string
 	Data   string
 	Status string
 }

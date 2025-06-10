@@ -1,7 +1,10 @@
 package port
 
-import "github.com/CP-Payne/wonderpicai/internal/domain"
+import (
+	"github.com/CP-Payne/wonderpicai/internal/domain"
+	"github.com/google/uuid"
+)
 
 type ImageRepository interface {
-	Create(image *domain.Image) error
+	GetByID(imageID uuid.UUID) (*domain.Image, error)
 }

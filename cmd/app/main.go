@@ -36,9 +36,10 @@ func main() {
 
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
+	imageRepo := gormadapter.NewGormImageRepository(db, logger)
 
 	authSvc := service.NewAuthService(userRepo, tokenService, logger)
-	genSvc := service.NewGenService(logger, genClient, promptRepo)
+	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo)
 
 	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
 

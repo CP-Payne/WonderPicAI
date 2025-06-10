@@ -3,6 +3,7 @@ package gen
 
 import (
 VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+"fmt"
 )
 
 templ CompletedImageCard(image VM.Image) {
@@ -42,15 +43,20 @@ templ FailedImageCard(image VM.Image) {
 </div>
 }
 
+templ OOBPendingImageCard(image VM.Image){
+<div hx-swap-oob="afterbegin:#gallery">
+    @PendingImageCard(image)
+</div>
+}
+
 
 templ PendingImageCard(image VM.Image) {
-<div hx-swap-oob="afterbegin:#gallery">
-    <div class="card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square">
-        <div class="w-full h-full flex flex-col justify-center items-center text-center p-4 bg-info/10 dark:bg-info/20">
-            <span class="loading loading-spinner loading-lg text-primary mb-3"></span>
-            <p class="font-medium text-primary text-lg">Generating Image...</p>
-            <p class="text-xs text-base-content/70 mt-1">Please wait a moment.</p>
-        </div>
+<div class="card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square"
+    hx-get={fmt.Sprintf("/gen/image/%s/status", image.ID)} hx-trigger="every 5s" hx-swap="outerHTML">
+    <div class="w-full h-full flex flex-col justify-center items-center text-center p-4 bg-info/10 dark:bg-info/20">
+        <span class="loading loading-spinner loading-lg text-primary mb-3"></span>
+        <p class="font-medium text-primary text-lg">Generating Image...</p>
+        <p class="text-xs text-base-content/70 mt-1">Please wait a moment.</p>
     </div>
 </div>
 }

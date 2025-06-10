@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -16,6 +17,7 @@ type GenService interface {
 	GenerateImage(userID uuid.UUID, promptData *PromptData) (*domain.Prompt, error)
 	GetAllPrompts(userID uuid.UUID) ([]domain.Prompt, error)
 	UpdatePlaceholderImages(externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error)
+	GetImageByID(imageID uuid.UUID) (image *domain.Image, err error)
 }
 
 type PromptData struct {
@@ -32,15 +34,15 @@ type genService struct {
 	logger         *zap.Logger
 	imageGenClient port.ImageGeneration
 	promptRepo     port.PromptRepository
-	// prompt and image repo here
-	// comfyLite client here
+	imageRepo      port.ImageRepository
 }
 
-func NewGenService(logger *zap.Logger, genClient port.ImageGeneration, promptRepo port.PromptRepository) GenService {
+func NewGenService(logger *zap.Logger, genClient port.ImageGeneration, promptRepo port.PromptRepository, imageRepo port.ImageRepository) GenService {
 	return &genService{
 		logger:         logger.With(zap.String("component", "GenService")),
 		imageGenClient: genClient,
 		promptRepo:     promptRepo,
+		imageRepo:      imageRepo,
 	}
 }
 
@@ -105,4 +107,16 @@ func (s *genService) UpdatePlaceholderImages(externalPromptID uuid.UUID, images 
 	}
 
 	return prompt, nil
+}
+
+func (s *genService) GetImageByID(imageID uuid.UUID) (image *domain.Image, err error) {
+	image, err = s.imageRepo.GetByID(imageID)
+	if err != nil {
+		if errors.Is(err, domain.ErrImageNotFound) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to retrieve image from repository: %w", err)
+	}
+
+	return image, nil
 }

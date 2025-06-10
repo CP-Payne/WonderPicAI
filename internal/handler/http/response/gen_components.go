@@ -26,3 +26,30 @@ func LoadPendingImage(w http.ResponseWriter, r *http.Request, logger *zap.Logger
 	}
 	return nil
 }
+
+func LoadOOBPendingImage(w http.ResponseWriter, r *http.Request, logger *zap.Logger, vm viewmodel.Image) (renderErr error) {
+	err := genComponents.OOBPendingImageCard(vm).Render(r.Context(), w)
+	if err != nil {
+		logger.Error("Failed to render OOBPendingImageCard component", zap.Error(err))
+		return fmt.Errorf("failed to render oob pending image: %w", err)
+	}
+	return nil
+}
+
+func LoadCompletedImage(w http.ResponseWriter, r *http.Request, logger *zap.Logger, vm viewmodel.Image) (renderErr error) {
+	err := genComponents.CompletedImageCard(vm).Render(r.Context(), w)
+	if err != nil {
+		logger.Error("Failed to render CompletedImageCard component", zap.Error(err))
+		return fmt.Errorf("failed to render completed image: %w", err)
+	}
+	return nil
+}
+
+func LoadFailedImage(w http.ResponseWriter, r *http.Request, logger *zap.Logger, vm viewmodel.Image) (renderErr error) {
+	err := genComponents.FailedImageCard(vm).Render(r.Context(), w)
+	if err != nil {
+		logger.Error("Failed to render FailedImageCard component", zap.Error(err))
+		return fmt.Errorf("failed to render failed image: %w", err)
+	}
+	return nil
+}

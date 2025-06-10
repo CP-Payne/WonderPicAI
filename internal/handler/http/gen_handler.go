@@ -6,11 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/rs/xid"
 	"go.uber.org/zap"
 
+	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	"github.com/CP-Payne/wonderpicai/internal/validation"
@@ -66,6 +68,7 @@ func (h *GenHandler) ShowGenPage(w http.ResponseWriter, r *http.Request) {
 	for _, prompt := range userPrompts {
 		for _, img := range prompt.Images {
 			images = append(images, viewmodel.Image{
+				ID:     img.ID.String(),
 				Data:   base64.StdEncoding.EncodeToString(img.ImageData),
 				Status: img.Status.String(),
 			})
@@ -172,7 +175,8 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 
 	// Load new pending images
 	for _, image := range prompt.Images {
-		loadErr := response.LoadPendingImage(w, r, h.logger, viewmodel.Image{
+		loadErr := response.LoadOOBPendingImage(w, r, h.logger, viewmodel.Image{
+			ID:     image.ID.String(),
 			Data:   string(image.ImageData),
 			Status: "Pending",
 		})
@@ -240,5 +244,55 @@ func (h *GenHandler) HandleImageCompletionWebhook(w http.ResponseWriter, r *http
 		h.logger.Warn("failed to update placeholder images")
 		return
 	}
+
+}
+
+func (h *GenHandler) HandleImageStatus(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.logger.Warn("invalid image uuid provided", zap.Error(err), zap.String("id", idStr))
+		return
+	}
+
+	image, err := h.genService.GetImageByID(id)
+	if err != nil {
+		h.logger.Error("failed to retrieve image by ID", zap.Error(err))
+		return
+	}
+
+	if image.Status == domain.Completed {
+		vm := viewmodel.Image{
+			ID:     image.ID.String(),
+			Data:   base64.StdEncoding.EncodeToString(image.ImageData),
+			Status: "completed",
+		}
+
+		loadErr := response.LoadCompletedImage(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+		return
+	}
+
+	if image.Status == domain.Failed {
+
+		vm := viewmodel.Image{
+			ID:     image.ID.String(),
+			Data:   base64.StdEncoding.EncodeToString(image.ImageData),
+			Status: "failed",
+		}
+
+		loadErr := response.LoadFailedImage(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+		return
+	}
+
+	// Don't do anything if still pending:
+	w.WriteHeader(http.StatusNoContent)
 
 }
