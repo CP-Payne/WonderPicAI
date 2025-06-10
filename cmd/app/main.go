@@ -3,47 +3,54 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/CP-Payne/wonderpicai/internal/adapter/generation/comfylite"
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
+	"github.com/CP-Payne/wonderpicai/internal/adapter/tokenservice"
 	"github.com/CP-Payne/wonderpicai/internal/app"
 	appconfig "github.com/CP-Payne/wonderpicai/internal/config"
-	authhandler "github.com/CP-Payne/wonderpicai/internal/handler/http"
+	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
+	applogger "github.com/CP-Payne/wonderpicai/internal/logger"
 	"github.com/CP-Payne/wonderpicai/internal/service"
+	"go.uber.org/zap"
 )
 
 func main() {
-
 	appconfig.LoadConfig()
 	cfg := appconfig.Cfg
 
-	gormadapter.ConnectDatabase(cfg.Database.DSN)
-	db := gormadapter.DB
-
-	// tokenProvider, err := jwtadapter.NewJWTTokenProvider(
-	// 	cfg.JWT.SecretKey,
-	// 	cfg.JWT.Issuer,
-	// 	cfg.JWT.ExpiryMinutes,
-	// ) // MODIFIED
-	// if err != nil {
-	// 	log.Fatalf("Failed to initialize token provider: %v", err)
-	// }
-
-	userRepo := gormadapter.NewGormUserRepository(db)
-
-	authSvc := service.NewAuthService(userRepo)
-
-	authHndlr := authhandler.NewAuthHandler(authSvc)
-
-	router := app.NewRouter(authHndlr)
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	logger, err := applogger.New(cfg.Server.LogLevel, cfg.Server.AppEnv)
+	if err != nil {
+		log.Fatalf("Failed to initialize application logger: %v", err)
 	}
 
-	log.Printf("Server starting on http://localhost:%s\n", cfg.Server.Port)
+	defer logger.Sync()
+	zap.ReplaceGlobals(logger)
+
+	gormadapter.ConnectDatabase(cfg.Database.DSN, cfg.Server.AppEnv, cfg.Server.LogLevel, logger)
+	db := gormadapter.DB
+
+	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
+	// TODO: Move ip to .env
+	genClient := comfylite.NewClient(logger, "http://172.24.192.1:8081")
+
+	userRepo := gormadapter.NewGormUserRepository(db, logger)
+	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
+	imageRepo := gormadapter.NewGormImageRepository(db, logger)
+
+	authSvc := service.NewAuthService(userRepo, tokenService, logger)
+	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo)
+
+	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
+
+	router := app.NewRouter(apiHandlers, logger)
+
+	logger.Info("Server starting",
+		zap.String("address", "http://0.0.0.0:"+cfg.Server.Port),
+		zap.String("app_env", cfg.Server.AppEnv),
+	)
+
 	if err := http.ListenAndServe(":"+cfg.Server.Port, router); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		logger.Fatal("Failed to start server", zap.Error(err))
 	}
 }

@@ -3,79 +3,133 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/CP-Payne/wonderpicai/internal/config"
 	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/port"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type AuthService interface {
-	Register(username, password string) (*domain.User, error)
-	Login(username, password string) (*domain.User, string, error)
+	Register(username, email, password string) (*domain.User, string, error)
+	Login(email, password string) (*domain.User, string, error)
 }
 
 type authServiceImpl struct {
-	userRepo port.UserRepository
+	logger       *zap.Logger
+	userRepo     port.UserRepository
+	tokenService port.TokenService
 }
 
-func NewAuthService(userRepo port.UserRepository /*, tokenService port.TokenService */) AuthService {
+func NewAuthService(userRepo port.UserRepository, tokenService port.TokenService, logger *zap.Logger) AuthService {
 	return &authServiceImpl{
-		userRepo: userRepo,
-		// tokenService: tokenService
+		userRepo:     userRepo,
+		logger:       logger.With(zap.String("component", "AuthService")),
+		tokenService: tokenService,
 	}
 }
 
-func (s *authServiceImpl) Register(username, password string) (*domain.User, error) {
-
-	if username == "" || password == "" {
-		return nil, errors.New("username and password are required")
+func (s *authServiceImpl) Register(username, email, password string) (*domain.User, string, error) {
+	existingUser, err := s.userRepo.GetByEmail(email)
+	if err != nil && !errors.Is(err, domain.ErrUserNotFound) {
+		s.logger.Error("Error checking existing user by email", zap.Error(err))
+		return nil, "", fmt.Errorf("registration process failed: %w", err)
 	}
 
-	existingUser, err := s.userRepo.GetByUsername(username)
-	if err != nil {
-		return nil, fmt.Errorf("error checking for existing user: %w", err)
-	}
 	if existingUser != nil {
-		return nil, errors.New("user with this username already exists") // TODO: Create custom domain error domain.ErrUserAlreadyExists
+		return nil, "", domain.ErrEmailAlreadyExists
 	}
 
-	// TODO: Hash password
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		s.logger.Error("Password hashing failed", zap.Error(err))
+		return nil, "", fmt.Errorf("user creation failed: %w", err)
+	}
 
-	user := &domain.User{
+	userToCreate := &domain.User{
+		BaseModel: domain.BaseModel{
+			ID:        uuid.New(),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
 		Username: username,
-		Password: password, // TODO: Store hashed password
+		Email:    email,
+		Password: hashedPassword,
 	}
 
-	if err := s.userRepo.Create(user); err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+	if err := s.userRepo.Create(userToCreate); err != nil {
+		if errors.Is(err, domain.ErrEmailAlreadyExists) || errors.Is(err, domain.ErrDuplicateEntry) {
+			s.logger.Warn("User creation conflict", zap.Error(err))
+			return nil, "", err
+		}
+		s.logger.Error("Failed to create user via repository", zap.Error(err))
+
+		return nil, "", fmt.Errorf("failed to complete registration due to an internal issue: %w", err)
 	}
 
 	// Don't return password, even if it is hashed
-	user.Password = ""
-	return user, nil
+	userToCreate.Password = ""
+
+	s.logger.Info("User creation successfull", zap.String("email", userToCreate.Email), zap.String("UserID", userToCreate.ID.String()))
+
+	claims := jwt.MapClaims{
+		"sub": userToCreate.ID,
+		"exp": time.Now().Add(time.Duration(config.Cfg.JWT.ExpiryMinutes) * time.Minute).Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": config.Cfg.JWT.Issuer,
+		// Same as issuer in this implementation
+		"aud": config.Cfg.JWT.Issuer,
+	}
+
+	token, err := s.tokenService.GenerateToken(claims)
+	if err != nil {
+		s.logger.Error("Failed to create JWT token after successfull user registration",
+			zap.String("email", userToCreate.Email),
+			zap.String("UserID", userToCreate.ID.String()),
+			zap.Error(err),
+		)
+		return userToCreate, "", fmt.Errorf("failed to generate jwt token via local token service: %w", err)
+	}
+
+	return userToCreate, token, nil
 }
 
-func (s *authServiceImpl) Login(username, password string) (*domain.User, string, error) {
-	if username == "" || password == "" {
-		return nil, "", errors.New("username and password are required")
-	}
-
-	user, err := s.userRepo.GetByUsername((username))
+func (s *authServiceImpl) Login(email, password string) (*domain.User, string, error) {
+	user, err := s.userRepo.GetByEmail(email)
 	if err != nil {
-		return nil, "", fmt.Errorf("error fetching user: %w", err)
-	}
-	if user == nil {
-		return nil, "", errors.New("invalid username or password")
-	}
-
-	// TODO: Compare hashed password
-
-	if user.Password != password {
-		return nil, "", errors.New("invalid username or password")
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return nil, "", domain.ErrInvalidCredentials
+		}
+		return nil, "", fmt.Errorf("failed authenticating user: %w", err)
 	}
 
-	// TODO: generate jwt token using tokenservice
+	if ok := checkPasswordHash(password, user.Password); !ok {
+		return nil, "", domain.ErrInvalidCredentials
+	}
 
-	token := "some dummy token until tokenservice implemented"
+	claims := jwt.MapClaims{
+		"sub": user.ID,
+		"exp": time.Now().Add(time.Duration(config.Cfg.JWT.ExpiryMinutes) * time.Minute).Unix(),
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"iss": config.Cfg.JWT.Issuer,
+		// Same as issuer in this implementation
+		"aud": config.Cfg.JWT.Issuer,
+	}
+
+	token, err := s.tokenService.GenerateToken(claims)
+	if err != nil {
+		s.logger.Error("Failed to create JWT token after successfull user authentication",
+			zap.String("email", user.Email),
+			zap.String("UserID", user.ID.String()),
+			zap.Error(err),
+		)
+		return user, "", fmt.Errorf("failed to generate jwt token via local token service: %w", err)
+	}
 
 	return user, token, nil
 }

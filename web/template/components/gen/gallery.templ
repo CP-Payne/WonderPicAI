@@ -1,0 +1,23 @@
+package gen
+
+
+import (
+VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+)
+
+templ Gallery(galleryData VM.GalleryComponentData) {
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" id="gallery">
+    for _, image := range galleryData.Images{
+    if image.Status == "Pending"{
+    @PendingImageCard(image)
+    } else if image.Status == "Completed"{
+
+    @CompletedImageCard(image)
+    } else {
+
+    @FailedImageCard(image)
+    }
+    }
+</div>
+}
