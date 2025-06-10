@@ -16,7 +16,9 @@ templ CompletedImageCard(image VM.Image) {
                     opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div class="card-actions justify-center">
                 <button class="btn btn-primary btn-xs">View</button>
-                <button class="btn btn-ghost btn-xs text-neutral-content hover:bg-white/20">Delete</button>
+                <button class="btn btn-ghost btn-xs text-neutral-content hover:bg-white/20"
+                    hx-delete={"/gen/image/"+image.ID} hx-target="closest .card" hx-swap="delete"
+                    hx-confirm="Are you sure?">Delete</button>
             </div>
         </div>
     </div>

@@ -7,4 +7,5 @@ import (
 
 type ImageRepository interface {
 	GetByID(imageID uuid.UUID) (*domain.Image, error)
+	Delete(imageID uuid.UUID) error
 }

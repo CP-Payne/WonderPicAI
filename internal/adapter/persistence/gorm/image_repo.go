@@ -32,3 +32,13 @@ func (r *gormImageRepository) GetByID(imageID uuid.UUID) (*domain.Image, error) 
 	}
 	return &image, nil
 }
+
+func (r *gormImageRepository) Delete(imageID uuid.UUID) error {
+	err := r.db.Delete(&domain.Image{}, imageID).Error
+	if err != nil {
+		r.logger.Error("failed to delete image from repository")
+		return fmt.Errorf("failed to delete image")
+	}
+
+	return nil
+}

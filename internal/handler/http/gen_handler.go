@@ -296,3 +296,33 @@ func (h *GenHandler) HandleImageStatus(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 
 }
+
+func (h *GenHandler) HandleImageDelete(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		h.logger.Warn("invalid image uuid provided", zap.Error(err), zap.String("id", idStr))
+		return
+	}
+
+	err = h.genService.DeleteImageByID(id)
+	if err != nil {
+		h.logger.Error("failed to delete image", zap.Error(err))
+
+		toastID, loadErr := response.LoadErrorToast(w, r, h.logger, "deletion failed")
+		if loadErr != nil {
+			h.logger.Error("failed loading ErrorToast", zap.String("toastID", toastID), zap.Error(err))
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+		return
+	}
+
+	toastID, loadErr := response.LoadSuccessToast(w, r, h.logger, "image deleted")
+	if loadErr != nil {
+		h.logger.Error("failed loading SuccessToast", zap.String("toastID", toastID), zap.Error(err))
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
+}
