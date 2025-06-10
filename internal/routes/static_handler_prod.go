@@ -1,6 +1,6 @@
 //go:build !dev
 
-package app
+package routes
 
 import (
 	"log"

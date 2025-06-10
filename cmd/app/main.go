@@ -7,10 +7,10 @@ import (
 	"github.com/CP-Payne/wonderpicai/internal/adapter/generation/comfylite"
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
 	"github.com/CP-Payne/wonderpicai/internal/adapter/tokenservice"
-	"github.com/CP-Payne/wonderpicai/internal/app"
 	appconfig "github.com/CP-Payne/wonderpicai/internal/config"
 	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
 	applogger "github.com/CP-Payne/wonderpicai/internal/logger"
+	"github.com/CP-Payne/wonderpicai/internal/routes"
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	"go.uber.org/zap"
 )
@@ -43,7 +43,7 @@ func main() {
 
 	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
 
-	router := app.NewRouter(apiHandlers, logger)
+	router := routes.NewRouter(apiHandlers, logger, tokenService)
 
 	logger.Info("Server starting",
 		zap.String("address", "http://0.0.0.0:"+cfg.Server.Port),
