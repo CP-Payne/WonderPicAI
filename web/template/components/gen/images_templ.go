@@ -120,7 +120,7 @@ func FailedImageCard(image VM.Image) templ.Component {
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-error/10 dark:bg-error/20\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-16 w-16 text-error mb-3\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg><p class=\"font-semibold text-error text-lg\">Generation Failed</p><p class=\"text-xs text-base-content/70 mt-1 flex flex-col\">Something went wrong. <button class=\"btn btn-xs btn-link text-accent p-0 mt-1\" hx-post=\"/retry-generation/\" hx-target=\"closest .card\" hx-swap=\"outerHTML\">Try again?</button></p></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"card bg-base-100 shadow-xl rounded-lg overflow-hidden aspect-square\"><div class=\"w-full h-full flex flex-col justify-center items-center text-center p-4 bg-error/10 dark:bg-error/20\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-16 w-16 text-error mb-3\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z\"></path></svg><p class=\"font-semibold text-error text-lg\">Generation Failed</p><p class=\"text-xs text-base-content/70 mt-1 flex flex-col\">Something went wrong.</p></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -193,7 +193,7 @@ func PendingImageCard(image VM.Image) templ.Component {
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/gen/image/%s/status", image.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/gen/images.templ`, Line: 60, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/gen/images.templ`, Line: 61, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {

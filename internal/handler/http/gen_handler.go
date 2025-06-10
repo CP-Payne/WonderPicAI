@@ -326,3 +326,22 @@ func (h *GenHandler) HandleImageDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (h *GenHandler) HandleFailedImagesDelete(w http.ResponseWriter, r *http.Request) {
+
+	err := h.genService.DeleteFailedImages()
+	if err != nil {
+		h.logger.Error("failed to delete images with status failed", zap.Error(err))
+
+		toastID, loadErr := response.LoadErrorToast(w, r, h.logger, "deletion failed")
+		if loadErr != nil {
+			h.logger.Error("failed loading ErrorToast", zap.String("toastID", toastID), zap.Error(err))
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+		return
+	}
+
+	response.HxRedirect(w, r, "/gen")
+
+}

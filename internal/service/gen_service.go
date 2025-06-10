@@ -19,6 +19,7 @@ type GenService interface {
 	UpdatePlaceholderImages(externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error)
 	GetImageByID(imageID uuid.UUID) (image *domain.Image, err error)
 	DeleteImageByID(imageID uuid.UUID) error
+	DeleteFailedImages() error
 }
 
 type PromptData struct {
@@ -126,6 +127,15 @@ func (s *genService) DeleteImageByID(imageID uuid.UUID) error {
 	err := s.imageRepo.Delete(imageID)
 	if err != nil {
 		return fmt.Errorf("failed to delete image: %w", err)
+	}
+	return nil
+}
+
+func (s *genService) DeleteFailedImages() error {
+	err := s.imageRepo.DeleteFailed()
+
+	if err != nil {
+		return fmt.Errorf("failed to delete images with status failed: %w", err)
 	}
 	return nil
 }

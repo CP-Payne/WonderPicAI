@@ -8,6 +8,8 @@
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
       "Courier New", monospace;
     --color-red-300: oklch(80.8% 0.114 19.571);
+    --color-red-400: oklch(70.4% 0.191 22.216);
+    --color-red-500: oklch(63.7% 0.237 25.331);
     --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
@@ -1684,6 +1686,11 @@
   .z-\[100\] {
     z-index: 100;
   }
+  .drawer-content {
+    grid-column-start: 2;
+    grid-row-start: 1;
+    min-width: calc(0.25rem * 0);
+  }
   .container {
     width: 100%;
     @media (width >= 40rem) {
@@ -2311,6 +2318,36 @@
   .bg-red-300 {
     background-color: var(--color-red-300);
   }
+  .bg-red-400 {
+    background-color: var(--color-red-400);
+  }
+  .bg-red-500 {
+    background-color: var(--color-red-500);
+  }
+  .bg-red-500\/50 {
+    background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 50%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-red-500) 50%, transparent);
+    }
+  }
+  .bg-red-500\/60 {
+    background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 60%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-red-500) 60%, transparent);
+    }
+  }
+  .bg-red-500\/70 {
+    background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 70%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-red-500) 70%, transparent);
+    }
+  }
+  .bg-red-500\/80 {
+    background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 80%, transparent);
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, var(--color-red-500) 80%, transparent);
+    }
+  }
   .bg-gradient-to-t {
     --tw-gradient-position: to top in oklab;
     background-image: linear-gradient(var(--tw-gradient-stops));
@@ -2463,6 +2500,9 @@
       color: color-mix(in oklab, var(--color-base-content) 80%, transparent);
     }
   }
+  .text-black {
+    color: var(--color-black);
+  }
   .text-error {
     color: var(--color-error);
   }
@@ -2471,6 +2511,9 @@
   }
   .text-primary {
     color: var(--color-primary);
+  }
+  .text-primary-content {
+    color: var(--color-primary-content);
   }
   .text-secondary {
     color: var(--color-secondary);
@@ -2619,6 +2662,14 @@
     --btn-p: 0.5rem;
     --size: calc(var(--size-field, 0.25rem) * 6);
   }
+  .btn-accent {
+    --btn-color: var(--color-accent);
+    --btn-fg: var(--color-accent-content);
+  }
+  .btn-error {
+    --btn-color: var(--color-error);
+    --btn-fg: var(--color-error-content);
+  }
   .btn-primary {
     --btn-color: var(--color-primary);
     --btn-fg: var(--color-primary-content);
@@ -2665,6 +2716,16 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-base-300);
+      }
+    }
+  }
+  .hover\:bg-red-500\/50 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: color-mix(in srgb, oklch(63.7% 0.237 25.331) 50%, transparent);
+        @supports (color: color-mix(in lab, red, red)) {
+          background-color: color-mix(in oklab, var(--color-red-500) 50%, transparent);
+        }
       }
     }
   }
