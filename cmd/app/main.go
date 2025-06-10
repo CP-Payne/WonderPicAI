@@ -3,54 +3,47 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/CP-Payne/wonderpicai/internal/adapter/generation/comfylite"
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
-	"github.com/CP-Payne/wonderpicai/internal/adapter/tokenservice"
 	"github.com/CP-Payne/wonderpicai/internal/app"
 	appconfig "github.com/CP-Payne/wonderpicai/internal/config"
-	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
-	applogger "github.com/CP-Payne/wonderpicai/internal/logger"
+	authhandler "github.com/CP-Payne/wonderpicai/internal/handler/http"
 	"github.com/CP-Payne/wonderpicai/internal/service"
-	"go.uber.org/zap"
 )
 
 func main() {
+
 	appconfig.LoadConfig()
 	cfg := appconfig.Cfg
 
-	logger, err := applogger.New(cfg.Server.LogLevel, cfg.Server.AppEnv)
-	if err != nil {
-		log.Fatalf("Failed to initialize application logger: %v", err)
-	}
-
-	defer logger.Sync()
-	zap.ReplaceGlobals(logger)
-
-	gormadapter.ConnectDatabase(cfg.Database.DSN, cfg.Server.AppEnv, cfg.Server.LogLevel, logger)
+	gormadapter.ConnectDatabase(cfg.Database.DSN)
 	db := gormadapter.DB
 
-	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
-	// TODO: Move ip to .env
-	genClient := comfylite.NewClient(logger, "http://172.24.192.1:8081")
+	// tokenProvider, err := jwtadapter.NewJWTTokenProvider(
+	// 	cfg.JWT.SecretKey,
+	// 	cfg.JWT.Issuer,
+	// 	cfg.JWT.ExpiryMinutes,
+	// ) // MODIFIED
+	// if err != nil {
+	// 	log.Fatalf("Failed to initialize token provider: %v", err)
+	// }
 
-	userRepo := gormadapter.NewGormUserRepository(db, logger)
-	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
-	imageRepo := gormadapter.NewGormImageRepository(db, logger)
+	userRepo := gormadapter.NewGormUserRepository(db)
 
-	authSvc := service.NewAuthService(userRepo, tokenService, logger)
-	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo)
+	authSvc := service.NewAuthService(userRepo)
 
-	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
+	authHndlr := authhandler.NewAuthHandler(authSvc)
 
-	router := app.NewRouter(apiHandlers, logger)
+	router := app.NewRouter(authHndlr)
 
-	logger.Info("Server starting",
-		zap.String("address", "http://0.0.0.0:"+cfg.Server.Port),
-		zap.String("app_env", cfg.Server.AppEnv),
-	)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 
+	log.Printf("Server starting on http://localhost:%s\n", cfg.Server.Port)
 	if err := http.ListenAndServe(":"+cfg.Server.Port, router); err != nil {
-		logger.Fatal("Failed to start server", zap.Error(err))
+		log.Fatalf("Failed to start server: %v", err)
 	}
 }

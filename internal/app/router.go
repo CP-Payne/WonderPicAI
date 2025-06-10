@@ -3,18 +3,16 @@ package app
 import (
 	"net/http"
 
-	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
+	authhandler "github.com/CP-Payne/wonderpicai/internal/handler/http"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"go.uber.org/zap"
 )
 
-func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger) http.Handler {
+func NewRouter(authHandler *authhandler.AuthHandler) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
-	r.Use(CustomRecoverer(logger))
-	// r.Use(middleware.Recoverer)
+	r.Use(middleware.Recoverer)
 	r.Use(middleware.StripSlashes)
 
 	staticServer := StaticFSHandler()
@@ -24,22 +22,13 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger) http.Handl
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/", handlers.LandingHandler.ShowLandingPage)
-	r.Get("/error", handlers.ErrorHandler.ServeGenericErrorPage)
+	pageHndlr := authhandler.NewPageHandler()
 
-	r.Get("/gen", handlers.GenHandler.ShowGenPage)
-	r.Post("/gen", handlers.GenHandler.HandleGenerationCreate)
-	r.Post("/gen/update", handlers.GenHandler.HandleImageCompletionWebhook)
-	r.Get("/gen/image/{id}/status", handlers.GenHandler.HandleImageStatus)
-	r.Delete("/gen/image/{id}", handlers.GenHandler.HandleImageDelete)
-	r.Delete("/gen/image/failed", handlers.GenHandler.HandleFailedImagesDelete)
+	r.Get("/", pageHndlr.ServeHomePage)
 
 	r.Route("/auth", func(r chi.Router) {
-		r.Get("/login", handlers.AuthHandler.ShowLoginPage)
-		r.Get("/signup", handlers.AuthHandler.ShowSignupPage)
-
-		r.Post("/signup", handlers.AuthHandler.HandleSignup)
-		r.Post("/login", handlers.AuthHandler.HandleLogin)
+		r.Post("/register", authHandler.Register)
+		r.Post("/login", authHandler.Login)
 	})
 
 	return r

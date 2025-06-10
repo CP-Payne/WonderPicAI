@@ -11,6 +11,7 @@ import (
 
 // StaticFSHandler serves static files from the filesystem during development
 func StaticFSHandler() http.Handler {
+
 	// Get current wokring directory
 	wd, err := os.Getwd()
 	if err != nil {
