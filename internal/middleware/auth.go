@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
+	"github.com/CP-Payne/wonderpicai/internal/auth"
 	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/port"
 	"github.com/golang-jwt/jwt/v5"
@@ -57,9 +57,7 @@ func WithAuth(logger *zap.Logger, tokenService port.TokenService) func(http.Hand
 				return
 			}
 
-			ctx := r.Context()
-
-			ctx = context.WithValue(ctx, UserIDKey, userID)
+			ctx := auth.NewContextWithUserID(r.Context(), userID)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
