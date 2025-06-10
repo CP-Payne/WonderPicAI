@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	httpHandler "github.com/CP-Payne/wonderpicai/internal/handler/http"
+	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/rs/xid"
 	"go.uber.org/zap"
 )
@@ -18,7 +18,7 @@ func CustomRecoverer(logger *zap.Logger) func(http.Handler) http.Handler {
 
 					message := "An unexpected problem occured. We are looking into it."
 
-					httpHandler.HxRedirectErrorPage(w, r, http.StatusInternalServerError, errorID, message)
+					response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, errorID, message)
 				}
 			}()
 

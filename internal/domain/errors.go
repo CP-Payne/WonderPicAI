@@ -9,4 +9,5 @@ var (
 	ErrInsufficientPermissions = errors.New("insufficient perfmissions")
 	ErrDuplicateEntry          = errors.New("entry with unique field already exists")
 	ErrImageNotFound           = errors.New("image not found")
+	ErrRecordNotFound          = errors.New("record not found")
 )

@@ -29,12 +29,13 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 	r.Get("/", handlers.LandingHandler.ShowLandingPage)
 	r.Get("/error", handlers.ErrorHandler.ServeGenericErrorPage)
 
+	r.Post("/gen/update", handlers.GenHandler.HandleImageCompletionWebhook)
+
 	r.Route("/gen", func(r chi.Router) {
 		r.Use(middleware.WithAuth(logger, tokenService))
 		r.Get("/", handlers.GenHandler.ShowGenPage)
 
 		r.Post("/", handlers.GenHandler.HandleGenerationCreate)
-		r.Post("/update", handlers.GenHandler.HandleImageCompletionWebhook)
 		r.Get("/image/{id}/status", handlers.GenHandler.HandleImageStatus)
 		r.Delete("/image/{id}", handlers.GenHandler.HandleImageDelete)
 		r.Delete("/image/failed", handlers.GenHandler.HandleFailedImagesDelete)
@@ -44,6 +45,7 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 		r.Get("/login", handlers.AuthHandler.ShowLoginPage)
 		r.Get("/signup", handlers.AuthHandler.ShowSignupPage)
 
+		r.Post("/logout", handlers.AuthHandler.HandleLogout)
 		r.Post("/signup", handlers.AuthHandler.HandleSignup)
 		r.Post("/login", handlers.AuthHandler.HandleLogin)
 	})

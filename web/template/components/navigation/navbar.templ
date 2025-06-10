@@ -39,9 +39,8 @@ templ Navbar() {
 	</div>
 
 	<div class="navbar-end flex">
-
 		if auth.IsAuthenticated(ctx){
-		<a class="btn btn-secondary">Logout</a>
+		<a class="btn btn-secondary" hx-post="/auth/logout">Logout</a>
 		} else {
 		<a class="btn mr-2 lg:mr-4 btn-primary" href="/auth/login" aria-label="navigate to login page">Login</a>
 		<a class="btn btn-accent lg:mr-3" href="/auth/signup" aria-label="navigate to signup page">Signup</a>

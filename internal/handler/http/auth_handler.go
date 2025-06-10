@@ -151,7 +151,7 @@ func (h *AuthHandler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 
 	response.SetAuthCookie(w, r, token)
 
-	response.HxRedirect(w, r, "/")
+	response.HxRedirect(w, r, "/gen")
 }
 
 func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
@@ -245,5 +245,12 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("User authenticated successfully", zap.String("userID", user.ID.String()))
 
 	response.SetAuthCookie(w, r, token)
-	response.HxRedirect(w, r, "/")
+	response.HxRedirect(w, r, "/gen")
+}
+
+func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
+
+	response.SetEmptyAuthCookie(w, r)
+
+	response.HxRedirect(w, r, "/auth/login")
 }
