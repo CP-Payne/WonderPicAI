@@ -75,7 +75,7 @@ func (r *gormWalletRepository) AddCredits(ctx context.Context, userID uuid.UUID,
 
 	if result.RowsAffected == 0 {
 		// This would mean the user_id doesn't exist
-		return gorm.ErrRecordNotFound
+		return domain.ErrRecordNotFound
 	}
 
 	return nil
