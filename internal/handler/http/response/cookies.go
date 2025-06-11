@@ -18,3 +18,15 @@ func SetAuthCookie(w http.ResponseWriter, r *http.Request, accessToken string) {
 		Expires:  time.Now().Add(time.Duration(config.Cfg.JWT.ExpiryMinutes) * time.Minute),
 	})
 }
+
+func SetEmptyAuthCookie(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   r.TLS != nil,
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+	})
+}

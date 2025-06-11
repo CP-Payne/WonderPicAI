@@ -12,17 +12,13 @@ import (
 	"github.com/rs/xid"
 	"go.uber.org/zap"
 
+	"github.com/CP-Payne/wonderpicai/internal/auth"
 	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	"github.com/CP-Payne/wonderpicai/internal/validation"
 	genPages "github.com/CP-Payne/wonderpicai/web/template/pages/gen"
 	"github.com/CP-Payne/wonderpicai/web/template/viewmodel"
-)
-
-// TODO: Get userID from context
-var (
-	userID = uuid.MustParse("935984f8-011e-48f8-a125-6b9992b87fad")
 )
 
 type GenHandler struct {
@@ -52,8 +48,15 @@ func NewGenHandler(logger *zap.Logger, validate *validator.Validate, genService 
 func (h *GenHandler) ShowGenPage(w http.ResponseWriter, r *http.Request) {
 
 	var images []viewmodel.Image
-	// TODO: Get images from database
-	userPrompts, err := h.genService.GetAllPrompts(userID)
+
+	userID, err := auth.UserID(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to get UserID from context")
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
+	userPrompts, err := h.genService.GetAllPrompts(r.Context(), userID)
 	if err != nil {
 		h.logger.Error("failed to retrieve images from genService", zap.Error(err), zap.String("userID", userID.String()))
 		toastID, loadErr := response.LoadErrorToast(w, r, h.logger, "failed loading images")
@@ -160,9 +163,14 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 	vm.Errors = make(map[string]string)
 	vm.Error = ""
 
-	// TODO: Get userID from context once implemented
+	userID, err := auth.UserID(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to get UserID from context")
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
 
-	prompt, err := h.genService.GenerateImage(userID, &service.PromptData{
+	prompt, err := h.genService.GenerateImage(r.Context(), userID, &service.PromptData{
 		Prompt:     req.Prompt,
 		ImageCount: req.ImageCount,
 	})
@@ -255,7 +263,14 @@ func (h *GenHandler) HandleImageStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	image, err := h.genService.GetImageByID(id)
+	userID, err := auth.UserID(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to get UserID from context")
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
+	image, err := h.genService.GetImageByID(r.Context(), userID, id)
 	if err != nil {
 		h.logger.Error("failed to retrieve image by ID", zap.Error(err))
 		return
@@ -305,7 +320,14 @@ func (h *GenHandler) HandleImageDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.genService.DeleteImageByID(id)
+	userID, err := auth.UserID(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to get UserID from context")
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
+	err = h.genService.DeleteImageByID(r.Context(), userID, id)
 	if err != nil {
 		h.logger.Error("failed to delete image", zap.Error(err))
 
@@ -329,9 +351,15 @@ func (h *GenHandler) HandleImageDelete(w http.ResponseWriter, r *http.Request) {
 
 func (h *GenHandler) HandleFailedImagesDelete(w http.ResponseWriter, r *http.Request) {
 
-	err := h.genService.DeleteFailedImages()
+	userID, err := auth.UserID(r.Context())
 	if err != nil {
-		h.logger.Error("failed to delete images with status failed", zap.Error(err))
+		h.logger.Error("Failed to get UserID from context")
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
+	err = h.genService.DeleteFailedImages(r.Context(), userID)
+	if err != nil {
 
 		toastID, loadErr := response.LoadErrorToast(w, r, h.logger, "deletion failed")
 		if loadErr != nil {

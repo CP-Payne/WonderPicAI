@@ -1,32 +1,35 @@
 package template
 
 import (
-	"github.com/CP-Payne/wonderpicai/web/template/components/navigation"
-	"github.com/CP-Payne/wonderpicai/web/template/components/ui"
+"github.com/CP-Payne/wonderpicai/web/template/components/navigation"
+"github.com/CP-Payne/wonderpicai/web/template/components/ui"
 )
 
 templ Base(useNav bool) {
-	<!DOCTYPE html>
-	<html lang="en" data-theme="forest">
-		<head>
-			<meta charset="UTF-8"/>
-			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-			<title>WonderPicAI</title>
-			<link rel="stylesheet" href="/static/css/style.css"/>
-			<link rel="stylesheet" href="/static/assets/fontawesome/css/solid.css"/>
-			<link rel="stylesheet" href="/static/assets/fontawesome/css/fontawesome.css"/>
-			<script src="/static/js/htmx.min.js" defer></script>
-			<!-- <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/> -->
-		</head>
-		<body class="w-full h-[100vh] bg-red-300">
-			<div id="toast-notifications" class="fixed top-4 right-4 z-[100] space-y-2"></div>
-			if useNav {
-				@navigation.Navbar()
-			}
-			{ children... }
-			@ui.ThemePersistenceJS()
-			@ui.ToastManagerJS()
-		</body>
-	</html>
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>WonderPicAI</title>
+	<link rel="stylesheet" href="/static/css/style.css" />
+	<link rel="stylesheet" href="/static/assets/fontawesome/css/solid.css" />
+	<link rel="stylesheet" href="/static/assets/fontawesome/css/fontawesome.css" />
+	<script src="/static/js/htmx.min.js" defer></script>
+	<!-- <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css"/> -->
+</head>
+
+<body class="w-full h-[100vh] bg-base-300">
+	<div id="toast-notifications" class="fixed top-4 right-30 z-[100] space-y-2"></div>
+	if useNav {
+	@navigation.Navbar()
+	}
+	{ children... }
+	@ui.ThemePersistenceJS()
+	@ui.ToastManagerJS()
+</body>
+
+</html>
 }
