@@ -39,7 +39,7 @@ func main() {
 	successURL := baseURL + "/purchase/success"
 	cancelURL := baseURL + "/purchase/cancel"
 
-	stripeProvider := stripe.NewProvider(logger, cfg.Stripe.Secret, successURL, cancelURL)
+	stripeProvider := stripe.NewProvider(logger, cfg.Stripe.Secret, cfg.Stripe.VerificationSecret, successURL, cancelURL)
 
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 	promptRepo := gormadapter.NewGormPromptRepository(db, logger)

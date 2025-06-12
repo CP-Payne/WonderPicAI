@@ -48,7 +48,8 @@ type ComfyLiteConfig struct {
 }
 
 type StripeConfig struct {
-	Secret string
+	Secret             string
+	VerificationSecret string
 }
 
 var Cfg AppConfig
@@ -116,6 +117,7 @@ func LoadConfig() {
 
 	// --- Stripe ---
 	Cfg.Stripe.Secret = getEnv("STRIPE_SECRET", "")
+	Cfg.Stripe.VerificationSecret = getEnv("STRIPE_WEBHOOK_VERIFICATION_SECRET", "")
 
 	log.Println("Configuration loaded successfully. APP_ENV:", Cfg.Server.AppEnv)
 

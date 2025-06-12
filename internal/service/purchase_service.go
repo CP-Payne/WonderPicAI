@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"sort"
 
 	"github.com/CP-Payne/wonderpicai/internal/domain"
@@ -15,7 +17,7 @@ type PurcaseService interface {
 	GetOptions(ctx context.Context) []PurchaseOption
 	OptionExists(ctx context.Context, option string) bool
 	CreateCheckout(ctx context.Context, userID uuid.UUID, option string) (checkoutURL string, err error)
-	HandleProviderEvents(ctx context.Context, data []byte)
+	HandleProviderEvents(r *http.Request, data []byte) error
 }
 
 type PurchaseOption struct {
@@ -107,6 +109,7 @@ func (s *purchaseService) CreateCheckout(ctx context.Context, userID uuid.UUID, 
 		Name:     productName,
 		Price:    opt.Price,
 		Quantity: 1,
+		Option:   option,
 	}
 	checkoutURL, err = s.provider.CreateCheckoutSession(userData, productData)
 	if err != nil {
@@ -116,6 +119,27 @@ func (s *purchaseService) CreateCheckout(ctx context.Context, userID uuid.UUID, 
 	return checkoutURL, nil
 }
 
-func (s *purchaseService) HandleProviderEvents(ctx context.Context, data []byte) {
+func (s *purchaseService) HandleProviderEvents(r *http.Request, data []byte) error {
+
+	sessionData, err := s.provider.HandleEvent(r, data)
+	if err != nil {
+		if errors.Is(err, domain.ErrUnhandledEvent) {
+			s.logger.Warn("skipping unhandled event from provided")
+		}
+		return err
+	}
+
+	purchasedOption, ok := options[sessionData.Option]
+	if !ok {
+		return domain.ErrInvalidPurchaseOption
+	}
+
+	err = s.walletService.AddCredits(r.Context(), sessionData.UserEmail, purchasedOption.Credits)
+	if err != nil {
+		s.logger.Error("CRITICAL - Failed adding credits to user account", zap.String("email", sessionData.UserEmail), zap.Int("amount", purchasedOption.Credits), zap.Error(err))
+		return err
+	}
+
+	return nil
 
 }

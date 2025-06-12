@@ -12,4 +12,6 @@ var (
 	ErrRecordNotFound          = errors.New("record not found")
 	ErrInsufficientFunds       = errors.New("insufficient funds")
 	ErrInvalidPurchaseOption   = errors.New("invalid purchase option")
+
+	ErrUnhandledEvent = errors.New("unhandled event")
 )

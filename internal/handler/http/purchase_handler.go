@@ -1,6 +1,8 @@
 package http
 
 import (
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -8,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/CP-Payne/wonderpicai/internal/context/auth"
+	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/service"
 	creditPages "github.com/CP-Payne/wonderpicai/web/template/pages/credits"
@@ -125,4 +128,24 @@ func (h *PurchaseHandler) HandlePurchaseOption(w http.ResponseWriter, r *http.Re
 	}
 
 	response.HxRedirect(w, r, checkoutURL)
+}
+
+func (h *PurchaseHandler) HandlePurchaseEvents(w http.ResponseWriter, r *http.Request) {
+
+	const MaxBodyBytes = int64(65536)
+	r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		h.logger.Error("Error reading request body", zap.Error(err))
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	err = h.purchaseService.HandleProviderEvents(r, payload)
+	if err != nil && !errors.Is(err, domain.ErrUnhandledEvent) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

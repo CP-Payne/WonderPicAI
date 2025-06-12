@@ -83,3 +83,29 @@ func (r *gormWalletRepository) AddCredits(ctx context.Context, userID uuid.UUID,
 
 	return nil
 }
+
+func (r *gormWalletRepository) AddCreditsToEmail(ctx context.Context, email string, amount int) error {
+
+	expression := gorm.Expr("credits + ?", amount)
+	subQuery := r.db.Model(&domain.User{}).Select("id").Where("email = ?", email)
+
+	result := r.db.WithContext(ctx).
+		Model(&domain.Wallet{}).
+		Where("user_id IN (?)", subQuery).
+		Update("credits", expression)
+
+	// result := r.db.Model(&domain.Wallet{}).
+	// 	Where("user_id = ?", userID).
+	// 	Update("credits", expression)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		// This would mean the user_id doesn't exist
+		return domain.ErrRecordNotFound
+	}
+
+	return nil
+}
