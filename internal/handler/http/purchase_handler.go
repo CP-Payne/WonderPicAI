@@ -56,6 +56,26 @@ func (h *PurchaseHandler) ShowPurchasePage(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+func (h *PurchaseHandler) ShowSuccessPage(w http.ResponseWriter, r *http.Request) {
+
+	err := creditPages.SuccessPage().Render(r.Context(), w)
+	if err != nil {
+		h.logger.Error("Failed to render success page", zap.Error(err))
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+}
+
+func (h *PurchaseHandler) ShowCancelPage(w http.ResponseWriter, r *http.Request) {
+
+	err := creditPages.CancelPage().Render(r.Context(), w)
+	if err != nil {
+		h.logger.Error("Failed to render success page", zap.Error(err))
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+}
+
 func (h *PurchaseHandler) HandlePurchaseOption(w http.ResponseWriter, r *http.Request) {
 	option := chi.URLParam(r, "option")
 
@@ -100,6 +120,8 @@ func (h *PurchaseHandler) HandlePurchaseOption(w http.ResponseWriter, r *http.Re
 	checkoutURL, err := h.purchaseService.CreateCheckout(r.Context(), userID, option)
 	if err != nil {
 		h.logger.Error("Failed to get checkout URL", zap.String("option", option+" credits"), zap.String("userID", userID.String()), zap.Error(err))
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
 	}
 
 	response.HxRedirect(w, r, checkoutURL)

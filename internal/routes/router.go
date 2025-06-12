@@ -54,6 +54,9 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 		r.Post("/{option}", handlers.PurchaseHandler.HandlePurchaseOption)
 	})
 
+	r.Get("/purchase/success", handlers.PurchaseHandler.ShowSuccessPage)
+	r.Get("/purchase/cancel", handlers.PurchaseHandler.ShowCancelPage)
+
 	r.Route("/auth", func(r chi.Router) {
 		r.Get("/login", handlers.AuthHandler.ShowLoginPage)
 		r.Get("/signup", handlers.AuthHandler.ShowSignupPage)

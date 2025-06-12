@@ -1,0 +1,40 @@
+package credits
+
+import "github.com/CP-Payne/wonderpicai/web/template"
+
+
+templ SuccessPage() {
+@template.Base(true) {
+<div
+    class="min-h-[calc(100vh-var(--navbar-height,4rem))] bg-base-200 py-12 sm:py-16 lg:py-20 flex items-center justify-center px-4">
+    <div class="card w-full max-w-lg bg-base-100 shadow-xl text-center p-8 sm:p-12">
+        <div class="mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-success mx-auto" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-success mb-4">Payment Submitted Successfully!</h1>
+        <p class="text-lg text-base-content/80 mb-3">
+            Thank you for your purchase!
+        </p>
+        <p class="text-base-content/70 mb-8">
+            Your credits will reflect in your account shortly, once the payment is fully confirmed by Stripe. This
+            usually happens within a few minutes.
+        </p>
+
+        <div class="mt-8 space-y-4">
+            <a href={ templ.URL("/gen") } class="btn btn-primary btn-wide">
+                Go to Image Generation
+            </a>
+            <p class="text-xs text-base-content/60">
+                If your credits don't appear after 15 minutes, please email us at <a
+                    href="mailto:wonderpicai@example.com" class="link">wonderpicai@example.com</a>.
+
+            </p>
+        </div>
+    </div>
+</div>
+}
+}

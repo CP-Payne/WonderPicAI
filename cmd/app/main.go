@@ -35,7 +35,7 @@ func main() {
 	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
 	genClient := comfylite.NewClient(logger, fmt.Sprintf("http://%s:%s", cfg.ComfyLite.Host, cfg.ComfyLite.Port))
 
-	baseURL := "http://0.0.0.0:" + cfg.Server.Port
+	baseURL := "http://localhost:" + cfg.Server.Port
 	successURL := baseURL + "/purchase/success"
 	cancelURL := baseURL + "/purchase/cancel"
 
