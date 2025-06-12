@@ -11,9 +11,11 @@ import (
 )
 
 type AppConfig struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	JWT      JWTConfig
+	Server    ServerConfig
+	Database  DatabaseConfig
+	JWT       JWTConfig
+	ComfyLite ComfyLiteConfig
+	Stripe    StripeConfig
 }
 
 type ServerConfig struct {
@@ -37,6 +39,16 @@ type JWTConfig struct {
 	SecretKey     string
 	Issuer        string
 	ExpiryMinutes int
+}
+
+// Image generation server config
+type ComfyLiteConfig struct {
+	Host string
+	Port string
+}
+
+type StripeConfig struct {
+	Secret string
 }
 
 var Cfg AppConfig
@@ -97,6 +109,13 @@ func LoadConfig() {
 	if len(Cfg.JWT.SecretKey) < 32 {
 		log.Fatal("FATAL: JWT_SECRET_KEY is too short (must be at least 32 bytes). Application cannot start.")
 	}
+
+	// --- ComfyLite ---
+	Cfg.ComfyLite.Host = getEnv("COMFYLITE_HOST", "127.0.0.1")
+	Cfg.ComfyLite.Port = getEnv("COMFYLITE_PORT", "8081")
+
+	// --- Stripe ---
+	Cfg.Stripe.Secret = getEnv("STRIPE_SECRET", "")
 
 	log.Println("Configuration loaded successfully. APP_ENV:", Cfg.Server.AppEnv)
 
