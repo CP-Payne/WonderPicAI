@@ -27,6 +27,8 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 		w.Write([]byte("OK"))
 	})
 
+	// TODO: Add success and cancel page
+
 	r.Get("/", handlers.LandingHandler.ShowLandingPage)
 	r.Get("/error", handlers.ErrorHandler.ServeGenericErrorPage)
 
@@ -44,6 +46,12 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 		r.Get("/image/{id}/status", handlers.GenHandler.HandleImageStatus)
 		r.Delete("/image/{id}", handlers.GenHandler.HandleImageDelete)
 		r.Delete("/image/failed", handlers.GenHandler.HandleFailedImagesDelete)
+	})
+
+	r.Route("/purchase", func(r chi.Router) {
+		r.Use(middleware.WithAuth(logger, tokenService))
+		r.Get("/", handlers.PurchaseHandler.ShowPurchasePage)
+		r.Post("/{option}", handlers.PurchaseHandler.HandlePurchaseOption)
 	})
 
 	r.Route("/auth", func(r chi.Router) {

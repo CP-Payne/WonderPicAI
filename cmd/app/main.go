@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/CP-Payne/wonderpicai/internal/adapter/generation/comfylite"
+	"github.com/CP-Payne/wonderpicai/internal/adapter/paymentprovider/stripe"
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
 	"github.com/CP-Payne/wonderpicai/internal/adapter/tokenservice"
 	appconfig "github.com/CP-Payne/wonderpicai/internal/config"
@@ -34,6 +35,12 @@ func main() {
 	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
 	genClient := comfylite.NewClient(logger, fmt.Sprintf("http://%s:%s", cfg.ComfyLite.Host, cfg.ComfyLite.Port))
 
+	baseURL := "http://0.0.0.0:" + cfg.Server.Port
+	successURL := baseURL + "/purchase/success"
+	cancelURL := baseURL + "/purchase/cancel"
+
+	stripeProvider := stripe.NewProvider(logger, cfg.Stripe.Secret, successURL, cancelURL)
+
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
 	imageRepo := gormadapter.NewGormImageRepository(db, logger)
@@ -42,7 +49,7 @@ func main() {
 	walletSvc := service.NewWalletService(logger, walletRepo)
 	authSvc := service.NewAuthService(userRepo, tokenService, logger)
 	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo, walletSvc)
-	purchaseSvc := service.NewPurchaseService(logger, walletSvc)
+	purchaseSvc := service.NewPurchaseService(logger, walletSvc, stripeProvider, userRepo)
 
 	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, purchaseSvc, logger)
 

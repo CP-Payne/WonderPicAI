@@ -97,3 +97,18 @@ func (r *gormUserRepository) GetByEmail(email string) (*domain.User, error) {
 	}
 	return &user, nil
 }
+
+func (r *gormUserRepository) GetByID(userID uuid.UUID) (*domain.User, error) {
+
+	var user domain.User
+
+	result := r.db.First(&user, userID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrUserNotFound
+		}
+		r.logger.Error("Failed to get user by ID", zap.String("userID", userID.String()), zap.Error(result.Error))
+		return nil, fmt.Errorf("database error fetching user by ID: %w", result.Error)
+	}
+	return &user, nil
+}
