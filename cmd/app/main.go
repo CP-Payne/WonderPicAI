@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -31,8 +32,7 @@ func main() {
 	db := gormadapter.DB
 
 	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
-	// TODO: Move ip to .env
-	genClient := comfylite.NewClient(logger, "http://172.24.192.1:8081")
+	genClient := comfylite.NewClient(logger, fmt.Sprintf("http://%s:%s", cfg.ComfyLite.Host, cfg.ComfyLite.Port))
 
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
@@ -42,8 +42,9 @@ func main() {
 	walletSvc := service.NewWalletService(logger, walletRepo)
 	authSvc := service.NewAuthService(userRepo, tokenService, logger)
 	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo, walletSvc)
+	purchaseSvc := service.NewPurchaseService(logger, walletSvc)
 
-	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
+	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, purchaseSvc, logger)
 
 	router := routes.NewRouter(apiHandlers, logger, tokenService, walletSvc)
 
