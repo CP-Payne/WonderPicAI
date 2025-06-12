@@ -30,9 +30,12 @@ func (r *gormWalletRepository) GetByUserID(ctx context.Context, userID uuid.UUID
 		First(&wallet).Error
 
 	if err != nil {
-		r.logger.Error("Failed to get image by ID due to database error", zap.String("userID", userID.String()), zap.Error(err))
+		r.logger.Error("Failed to get wallet by user ID due to database error", zap.String("userID", userID.String()), zap.Error(err))
+
+		return nil, fmt.Errorf("database error fetching wallet: %w", err)
 	}
-	return nil, fmt.Errorf("database error fetching image: %w", err)
+
+	return &wallet, nil
 
 }
 

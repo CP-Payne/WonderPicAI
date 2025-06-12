@@ -37,13 +37,15 @@ func main() {
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
 	imageRepo := gormadapter.NewGormImageRepository(db, logger)
+	walletRepo := gormadapter.NewGormWalletRepository(db, logger)
 
+	walletSvc := service.NewWalletService(logger, walletRepo)
 	authSvc := service.NewAuthService(userRepo, tokenService, logger)
-	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo)
+	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo, walletSvc)
 
 	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
 
-	router := routes.NewRouter(apiHandlers, logger, tokenService)
+	router := routes.NewRouter(apiHandlers, logger, tokenService, walletSvc)
 
 	logger.Info("Server starting",
 		zap.String("address", "http://0.0.0.0:"+cfg.Server.Port),

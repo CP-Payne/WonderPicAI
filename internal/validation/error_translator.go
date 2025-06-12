@@ -35,7 +35,9 @@ func TranslateValidationErrors(err error) (map[string]string, string) {
 				// fieldError.Param() --> field it's compared against.
 				errorMessage = "Passwords do not match."
 			case "gte":
-				errorMessage = fmt.Sprintf("%s must be greater than %s", fieldName, fieldError.Param())
+				errorMessage = fmt.Sprintf("%s must be greater than or equal to %s", fieldName, fieldError.Param())
+			case "lte":
+				errorMessage = fmt.Sprintf("%s must be less than or equal to %s", fieldName, fieldError.Param())
 			case "passwordcomplexity":
 				errorMessage = "Password must be at least 8 characters long and include an uppercase letter, lowercase letter, number, and special character."
 			default:

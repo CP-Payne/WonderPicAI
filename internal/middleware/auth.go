@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/CP-Payne/wonderpicai/internal/auth"
+	"github.com/CP-Payne/wonderpicai/internal/context/auth"
 	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/port"
 	"github.com/golang-jwt/jwt/v5"

@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -12,7 +13,8 @@ import (
 	"github.com/rs/xid"
 	"go.uber.org/zap"
 
-	"github.com/CP-Payne/wonderpicai/internal/auth"
+	"github.com/CP-Payne/wonderpicai/internal/context/auth"
+	"github.com/CP-Payne/wonderpicai/internal/context/credits"
 	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/service"
@@ -29,7 +31,7 @@ type GenHandler struct {
 
 type GenRequest struct {
 	Prompt     string `validate:"required,min=3"`
-	ImageCount int    `validate:"required,number,gte=1"`
+	ImageCount int    `validate:"required,number,gte=1,lte=10"`
 }
 
 type ImageUpdateWebhookRequest struct {
@@ -56,6 +58,13 @@ func (h *GenHandler) ShowGenPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userCredits, err := credits.RemainingCredits(r.Context())
+	if err != nil {
+		h.logger.Error("failed to retrieve user credits from context", zap.Error(err))
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
 	userPrompts, err := h.genService.GetAllPrompts(r.Context(), userID)
 	if err != nil {
 		h.logger.Error("failed to retrieve images from genService", zap.Error(err), zap.String("userID", userID.String()))
@@ -78,12 +87,20 @@ func (h *GenHandler) ShowGenPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Calculate minimum cost
+	minCost := h.genService.CalculateCost(r.Context(), &service.PromptData{
+		ImageCount: 1,
+	})
+
 	genPageData := viewmodel.GenPageData{
 		GalleryData: viewmodel.GalleryComponentData{
 			Images: images,
 		},
 		GenFormData: viewmodel.GenFormComponentData{
-			Form:   viewmodel.GenFormData{},
+			Form: viewmodel.GenFormData{
+				MinCost: minCost,
+				Credits: userCredits,
+			},
 			Errors: map[string]string{},
 			Error:  "",
 		},
@@ -103,10 +120,20 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	// Get user credits
+	userCredits, err := credits.RemainingCredits(r.Context())
+	if err != nil {
+		h.logger.Error("failed to retrieve user credits from context", zap.Error(err))
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
 	vm := viewmodel.GenFormComponentData{
 		Form: viewmodel.GenFormData{
-			Prompt: r.FormValue("prompt"),
-			Number: 1,
+			Prompt:  r.FormValue("prompt"),
+			Number:  1,
+			Credits: userCredits,
+			MinCost: h.genService.CalculateCost(r.Context(), &service.PromptData{ImageCount: 1}),
 		},
 		Errors: map[string]string{},
 		Error:  "",
@@ -163,6 +190,24 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 	vm.Errors = make(map[string]string)
 	vm.Error = ""
 
+	// Check funds
+	// --- Note ---
+	// Avaible funds is also checked in the service and repository layer
+	// This check is to prevent unecessary calls to service and repository layer
+	totalCost := h.genService.CalculateCost(r.Context(), &service.PromptData{ImageCount: req.ImageCount})
+
+	if totalCost > userCredits {
+		vm.Errors["credits"] = fmt.Sprintf("insufficient credits - you require %d more", totalCost-userCredits)
+		loadErr := response.LoadGenForm(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+		return
+	}
+
+	// --- Check
+
 	userID, err := auth.UserID(r.Context())
 	if err != nil {
 		h.logger.Error("Failed to get UserID from context")
@@ -180,6 +225,10 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
 		return
 	}
+
+	// Generation request successfully sent show new credit balance
+	vm.Form.Credits = vm.Form.Credits - totalCost
+	// TODO: if the image generation API fails generating images, refund credits (events)
 
 	// Load new pending images
 	for _, image := range prompt.Images {
