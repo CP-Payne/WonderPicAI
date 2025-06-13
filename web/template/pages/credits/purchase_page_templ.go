@@ -45,7 +45,7 @@ func PurchasePage(data viewmodel.PurchaseViewData) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-[calc(100vh-var(--navbar-height,5rem))] bg-base-200 py-12 sm:py-16 lg:py-20\"><div class=\"container mx-auto px-4\"><div class=\"text-center mb-12 sm:mb-16\"><h1 class=\"text-4xl sm:text-5xl font-bold tracking-tight text-primary mb-4\">Purchase Credits</h1><p class=\"text-lg text-base-content/80 max-w-2xl mx-auto\">Unlock more image generations and premium features by purchasing credits. Choose the pack that suits you best!</p></div><div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-[calc(100vh-var(--navbar-height,4rem))] bg-base-200 py-12 sm:py-16 lg:py-20\"><div class=\"container mx-auto px-4\"><div class=\"text-center mb-12 sm:mb-16\"><h1 class=\"text-4xl sm:text-5xl font-bold tracking-tight text-primary mb-4\">Purchase Credits</h1><p class=\"text-lg text-base-content/80 max-w-2xl mx-auto\">Unlock more image generations and premium features by purchasing credits. Choose the pack that suits you best!</p></div><div class=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
