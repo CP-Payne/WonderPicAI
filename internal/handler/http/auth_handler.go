@@ -48,7 +48,7 @@ func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
 		Errors: make(map[string]string),
 		Error:  "",
 	}
-	err := authPages.AuthPage(authComponents.LoginForm(vm), config.Cfg.GoogleAuth.ClientSecret).Render(r.Context(), w)
+	err := authPages.AuthPage(authComponents.LoginForm(vm), config.Cfg.GoogleAuth.ClientSecret, viewmodel.LoginTitle).Render(r.Context(), w)
 	if err != nil {
 		h.logger.Error("Failed to render login page", zap.Error(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -67,7 +67,7 @@ func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
 		Error:  "",
 	}
 
-	err := authPages.AuthPage(authComponents.SignupForm(vm), config.Cfg.GoogleAuth.ClientSecret).Render(r.Context(), w)
+	err := authPages.AuthPage(authComponents.SignupForm(vm), config.Cfg.GoogleAuth.ClientSecret, viewmodel.SignUpTitle).Render(r.Context(), w)
 	if err != nil {
 		h.logger.Error("Failed to render login page", zap.Error(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
