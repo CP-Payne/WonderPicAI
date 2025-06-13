@@ -29,10 +29,10 @@ var appScreenshots = []struct {
 		FeatureName: "Simple Credit System",
 	},
 	{
-		Src:         "/static/img/screenshots/gallery-example.webp",
-		Alt:         "Gallery of AI Generated Images",
-		Caption:     "Explore a universe of possibilities. Your generated images, beautifully organized and ready to use.",
-		FeatureName: "Your Creative Hub",
+		Src:         "/static/img/screenshots/stripe-checkout.webp",
+		Alt:         "WonderPicAI Stripe Checkout Page",
+		Caption:     "Secure payments powered by Stripe. Choose the plan that fits your creative needs and check out with confidence.",
+		FeatureName: "Secure Stripe Checkout",
 	},
 }
 
