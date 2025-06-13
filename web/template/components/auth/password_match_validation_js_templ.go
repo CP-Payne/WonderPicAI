@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 var PasswordMatchValidationJSHandle = templ.NewOnceHandle()
 
-func PasswordMatchValidationJS2() templ.Component {
+func PasswordMatchValidationJS() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -50,53 +50,6 @@ func PasswordMatchValidationJS2() templ.Component {
 			return nil
 		})
 		templ_7745c5c3_Err = PasswordMatchValidationJSHandle.Once().Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-func PasswordMatchValidationJS() templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var3 == nil {
-			templ_7745c5c3_Var3 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Var4 := templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-			templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-			templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-			if !templ_7745c5c3_IsBuffer {
-				defer func() {
-					templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-					if templ_7745c5c3_Err == nil {
-						templ_7745c5c3_Err = templ_7745c5c3_BufErr
-					}
-				}()
-			}
-			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<script>\n    function initializePasswordVisibilityToggles(parentElement) {\n        // Find buttons within the specific parentElement\n        const togglePasswordButtons = parentElement.querySelectorAll('.toggle-password-visibility');\n\n        togglePasswordButtons.forEach(button => {\n            // Prevent re-attaching listeners if already initialized on this specific button\n            if (button.dataset.viewPasswordInitialized === 'true') {\n                return;\n            }\n\n            const targetInputId = button.dataset.targetInput;\n            if (!targetInputId) {\n                console.warn('ViewPasswordJS: Button is missing data-target-input attribute:', button);\n                return;\n            }\n\n            // Query for the input within the same parentElement context\n            const passwordInput = parentElement.querySelector('#' + targetInputId);\n\n            const eyeIcon = button.querySelector('.eye-icon');\n            const eyeSlashIcon = button.querySelector('.eye-slash-icon');\n\n            if (passwordInput && eyeIcon && eyeSlashIcon) {\n                button.addEventListener('click', function () {\n                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';\n                    passwordInput.setAttribute('type', type);\n\n                    // Simple toggle based on the new type\n                    if (type === 'text') {\n                        eyeIcon.classList.add('hidden');\n                        eyeSlashIcon.classList.remove('hidden');\n                    } else {\n                        eyeIcon.classList.remove('hidden');\n                        eyeSlashIcon.classList.add('hidden');\n                    }\n                });\n                button.dataset.viewPasswordInitialized = 'true'; // Mark as initialized\n            } else {\n                if (!passwordInput) console.warn('ViewPasswordJS: Could not find password input with ID:', targetInputId, 'for button:', button, 'within parent:', parentElement);\n                if (!eyeIcon) console.warn('ViewPasswordJS: Could not find .eye-icon in button:', button);\n                if (!eyeSlashIcon) console.warn('ViewPasswordJS: Could not find .eye-slash-icon in button:', button);\n            }\n        });\n    }\n\n    // Initial setup on DOMContentLoaded\n    document.addEventListener('DOMContentLoaded', function () {\n        initializePasswordVisibilityToggles(document.body);\n    });\n\n    // HTMX event to re-initialize after content swap\n    document.body.addEventListener('htmx:afterSwap', function (event) {\n        // event.detail.elt is the element that htmx swapped into the DOM\n        // Initialize interactions on the newly swapped content or its relevant container\n        if (event.detail.elt) {\n            initializePasswordVisibilityToggles(event.detail.elt);\n        }\n    });\n\n</script>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			return nil
-		})
-		templ_7745c5c3_Err = PasswordMatchValidationJSHandle.Once().Render(templ.WithChildren(ctx, templ_7745c5c3_Var4), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

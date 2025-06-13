@@ -1,5 +1,10 @@
 package viewmodel
 
+var (
+	SignUpTitle = "Sign Up"
+	LoginTitle  = "Login"
+)
+
 type SignupFormData struct {
 	Username string
 	Email    string

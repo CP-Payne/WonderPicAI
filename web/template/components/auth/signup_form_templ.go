@@ -33,14 +33,14 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"signup-card\" class=\"card-body space-y-2\"><h1 class=\"text-3xl text-secondary\">Signup</h1><form class=\"space-y-4\" hx-post=\"/auth/signup\" hx-swap=\"outerHTML\" hx-target=\"#signup-card\"><div><fieldset class=\"fieldset\"><label class=\"fieldset-legend\">Username</label><div class=\"input validator\"><svg class=\"h-[1em] opacity-50\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><g stroke-linejoin=\"round\" stroke-linecap=\"round\" stroke-width=\"2.5\" fill=\"none\" stroke=\"currentColor\"><path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"></path> <circle cx=\"12\" cy=\"7\" r=\"4\"></circle></g></svg> <input type=\"text\" required placeholder=\"Username\" name=\"username\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"signup-card\" class=\"card-body space-y-2\"><form class=\"space-y-4\" hx-post=\"/auth/signup\" hx-swap=\"outerHTML\" hx-target=\"#signup-card\"><div><fieldset class=\"fieldset\"><label class=\"fieldset-legend\">Username</label><div class=\"input validator\"><svg class=\"h-[1em] opacity-50\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><g stroke-linejoin=\"round\" stroke-linecap=\"round\" stroke-width=\"2.5\" fill=\"none\" stroke=\"currentColor\"><path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\"></path> <circle cx=\"12\" cy=\"7\" r=\"4\"></circle></g></svg> <input type=\"text\" required placeholder=\"Username\" name=\"username\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Form.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 32, Col: 33}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 21, Col: 98}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -58,7 +58,7 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(err)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 41, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 26, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -81,7 +81,7 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(data.Form.Email)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 79, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 55, Col: 89}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -99,7 +99,7 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(err)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 85, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 59, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -120,9 +120,10 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(PasswordValidationRegex())
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(
+			PasswordValidationRegex())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 112, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 77, Col: 31}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -140,7 +141,7 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(err)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 156, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 99, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -168,7 +169,7 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(err)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 233, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 148, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -184,7 +185,7 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</fieldset></div><button type=\"submit\" class=\"btn btn-primary w-full\">Signup<i class=\"fa-solid fa-arrow-right\"></i></button><p>Already have an account?  <span><a href=\"/auth/login\" aria-label=\"Go to login page\" class=\"hover:cursor-pointer text-accent hover:text-accent/50\">Login</a></span></p>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</fieldset></div><button type=\"submit\" class=\"btn btn-primary w-full\">Signup<i class=\"fa-solid fa-arrow-right\"></i></button><p>Already have an account? <span><a href=\"/auth/login\" aria-label=\"Go to login page\" class=\"hover:cursor-pointer text-accent hover:text-accent/50\">Login</a></span></p>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -196,7 +197,7 @@ func SignupForm(data VM.SignupFormComponentData) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(data.Error)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 251, Col: 70}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/signup_form.templ`, Line: 163, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {

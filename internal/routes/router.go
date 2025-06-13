@@ -27,8 +27,6 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 		w.Write([]byte("OK"))
 	})
 
-	// TODO: Add success and cancel page
-
 	r.Get("/", handlers.LandingHandler.ShowLandingPage)
 	r.Get("/error", handlers.ErrorHandler.ServeGenericErrorPage)
 
@@ -57,6 +55,8 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 	r.Get("/purchase/success", handlers.PurchaseHandler.ShowSuccessPage)
 	r.Get("/purchase/cancel", handlers.PurchaseHandler.ShowCancelPage)
 	r.Post("/purchase/webhook", handlers.PurchaseHandler.HandlePurchaseEvents)
+
+	r.Post("/auth/login/google/callback", handlers.AuthHandler.HandleExternalAuth)
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Get("/login", handlers.AuthHandler.ShowLoginPage)

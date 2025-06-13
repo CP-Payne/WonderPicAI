@@ -33,14 +33,14 @@ func LoginForm(data VM.LoginFormComponentData) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"login-card\" class=\"card-body space-y-2\"><h1 class=\"text-3xl text-accent\">Login</h1><form class=\"space-y-4\" hx-post=\"/auth/login\" hx-swap=\"outerHTML\" hx-target=\"#login-card\"><div><fieldset class=\"fieldset\"><label class=\"fieldset-legend\">Email</label><div class=\"input validator\"><svg class=\"h-[1em] opacity-50\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><g stroke-linejoin=\"round\" stroke-linecap=\"round\" stroke-width=\"2.5\" fill=\"none\" stroke=\"currentColor\"><rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"></rect> <path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"></path></g></svg> <input type=\"email\" name=\"email\" placeholder=\"mail@site.com\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"login-card\" class=\"card-body space-y-2\"><form class=\"space-y-4\" hx-post=\"/auth/login\" hx-swap=\"outerHTML\" hx-target=\"#login-card\"><div><fieldset class=\"fieldset\"><label class=\"fieldset-legend\">Email</label><div class=\"input validator\"><svg class=\"h-[1em] opacity-50\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><g stroke-linejoin=\"round\" stroke-linecap=\"round\" stroke-width=\"2.5\" fill=\"none\" stroke=\"currentColor\"><rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"></rect> <path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"></path></g></svg> <input type=\"email\" name=\"email\" placeholder=\"mail@site.com\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Form.Email)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 27, Col: 90}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 21, Col: 89}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -58,7 +58,7 @@ func LoginForm(data VM.LoginFormComponentData) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(err)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 30, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 25, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -86,7 +86,7 @@ func LoginForm(data VM.LoginFormComponentData) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(err)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 76, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 64, Col: 44}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -105,7 +105,7 @@ func LoginForm(data VM.LoginFormComponentData) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Error)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 79, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/components/auth/login_form.templ`, Line: 67, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -117,10 +117,6 @@ func LoginForm(data VM.LoginFormComponentData) templ.Component {
 			}
 		}
 		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</fieldset></div><button type=\"submit\" class=\"btn btn-primary w-full\">Login <i class=\"fa-solid fa-arrow-right\"></i></button><p>Not registered? <span><a href=\"/auth/signup\" class=\"hover:cursor-pointer text-accent hover:text-accent/50\" aria-label=\"Go to signup page\">Sign up</a></span></p></form></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = ViewPasswordJS().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

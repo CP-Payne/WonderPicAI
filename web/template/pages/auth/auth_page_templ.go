@@ -11,9 +11,10 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"github.com/CP-Payne/wonderpicai/web/template"
 	authComponent "github.com/CP-Payne/wonderpicai/web/template/components/auth"
+	"github.com/CP-Payne/wonderpicai/web/template/viewmodel"
 )
 
-func AuthPage(formComponent templ.Component) templ.Component {
+func AuthPage(formComponent templ.Component, externalAuthSecret string, pageTitle string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -46,7 +47,20 @@ func AuthPage(formComponent templ.Component) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"w-full min-h-screen p-4 flex items-center justify-center bg-base-300\"><a href=\"/\" aria-label=\"Go back to landing page\" class=\"btn btn-ghost btn-circle fixed  top-4 left-4 z-50 shadow-lg bg-base-100 backdrop-blur-sm hover:bg-base-100/65\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"size-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3\"></path></svg></a><div class=\"card w-full max-w-md bg-base-100 shadow-xl p-6 sm:p-8\"><div class=\"text-center mb-6\"><a href=\"/\" aria-label=\"Go to landing page\" class=\"inline-block\"><span class=\"text-3xl font-bold text-primary\">WonderPicAI</span></a></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"w-full min-h-screen p-4 flex items-center justify-center bg-base-200 text-base-content\"><a href=\"/\" aria-label=\"Go back to landing page\" class=\"btn btn-ghost btn-circle btn-sm md:btn-md fixed  top-4 left-4 z-50 shadow-lg bg-base-100/70 backdrop-blur-sm hover:bg-base-content/20\"><svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke-width=\"1.5\" stroke=\"currentColor\" class=\"w-5 h-5 md:w-6 md:h-6\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3\"></path></svg></a><div class=\"card w-full max-w-md bg-base-100 shadow-2xl p-6 sm:p-10 rounded-xl\"><div class=\"text-center\"><a href=\"/\" aria-label=\"Go to landing page\" class=\"inline-block mb-2\"><span class=\"text-3xl sm:text-4xl font-bold text-primary\">WonderPicAI</span></a><h1 class=\"text-2xl sm:text-3xl font-semibold text-accent\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(pageTitle)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/pages/auth/auth_page.templ`, Line: 26, Col: 73}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</h1></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -54,7 +68,26 @@ func AuthPage(formComponent templ.Component) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div>")
+			if externalAuthSecret != "" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div class=\"divider my-6 text-sm text-base-content/70\">OR</div><div class=\"flex justify-center\"><div id=\"g_id_onload\" data-client_id=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var4 string
+				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(externalAuthSecret)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/template/pages/auth/auth_page.templ`, Line: 35, Col: 59}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" data-context=\"signin\" data-ux_mode=\"popup\" data-login_uri=\"/auth/login/google/callback\" data-auto_prompt=\"false\"></div><div class=\"g_id_signin\" data-type=\"standard\" data-shape=\"rectangular\" data-theme=\"filled_black\" data-text=\"signin_with\" data-size=\"large\" data-logo_alignment=\"left\" data-width=\"300\"></div></div>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</div></div><script src=\"https://accounts.google.com/gsi/client\" async defer></script> ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -62,13 +95,15 @@ func AuthPage(formComponent templ.Component) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = authComponent.PasswordMatchValidationJS().Render(ctx, templ_7745c5c3_Buffer)
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
+			if pageTitle == viewmodel.SignUpTitle {
+				templ_7745c5c3_Err = authComponent.PasswordMatchValidationJS().Render(ctx, templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
 			}
 			return nil
 		})

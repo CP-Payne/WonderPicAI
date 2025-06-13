@@ -11,11 +11,12 @@ import (
 )
 
 type AppConfig struct {
-	Server    ServerConfig
-	Database  DatabaseConfig
-	JWT       JWTConfig
-	ComfyLite ComfyLiteConfig
-	Stripe    StripeConfig
+	Server     ServerConfig
+	Database   DatabaseConfig
+	JWT        JWTConfig
+	GoogleAuth GoogleAuth
+	ComfyLite  ComfyLiteConfig
+	Stripe     StripeConfig
 }
 
 type ServerConfig struct {
@@ -39,6 +40,10 @@ type JWTConfig struct {
 	SecretKey     string
 	Issuer        string
 	ExpiryMinutes int
+}
+
+type GoogleAuth struct {
+	ClientSecret string
 }
 
 // Image generation server config
@@ -118,6 +123,9 @@ func LoadConfig() {
 	// --- Stripe ---
 	Cfg.Stripe.Secret = getEnv("STRIPE_SECRET", "")
 	Cfg.Stripe.VerificationSecret = getEnv("STRIPE_WEBHOOK_VERIFICATION_SECRET", "")
+
+	// -- Google Auth ---
+	Cfg.GoogleAuth.ClientSecret = getEnv("GOOGLE_CLIENT_SECRET", "")
 
 	log.Println("Configuration loaded successfully. APP_ENV:", Cfg.Server.AppEnv)
 
