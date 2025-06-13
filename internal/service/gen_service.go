@@ -21,6 +21,7 @@ type GenService interface {
 	GetImageByID(ctx context.Context, userID uuid.UUID, imageID uuid.UUID) (image *domain.Image, err error)
 	DeleteImageByID(ctx context.Context, userID uuid.UUID, imageID uuid.UUID) error
 	DeleteFailedImages(ctx context.Context, userID uuid.UUID) error
+	ContainsFailedImages(ctx context.Context, userID uuid.UUID) (bool, error)
 }
 
 type PromptData struct {
@@ -208,4 +209,17 @@ func (s *genService) DeleteFailedImages(ctx context.Context, userID uuid.UUID) e
 		zap.String("userID", userID.String()),
 	)
 	return nil
+}
+
+func (s *genService) ContainsFailedImages(ctx context.Context, userID uuid.UUID) (bool, error) {
+	contains, err := s.imageRepo.ContainsFailedImages(ctx, userID)
+	if err != nil {
+		s.logger.Error("Repository failed to determine if failed images exist",
+			zap.String("userID", userID.String()),
+			zap.Error(err),
+		)
+		return false, fmt.Errorf("failed to determine if failed images exist: %w", err)
+	}
+
+	return contains, nil
 }

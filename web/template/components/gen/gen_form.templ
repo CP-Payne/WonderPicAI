@@ -8,56 +8,97 @@ VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
 
 templ GenForm(data VM.GenFormComponentData) {
 
-<form hx-post="/gen" hx-swap="outerHTML" class="space-y-6">
+<form id="gen-form" hx-post="/gen" hx-swap="outerHTML" hx-indicator="#generation-spinner-area" class="space-y-6"
+    data-cost-per-image={fmt.Sprintf("%d", data.Form.MinCost)}>
     <div>
-        <h2 class="text-xl font-semibold mb-4 text-secondary">Image Generation Settings</h2>
+        <h2 class="text-xl font-semibold mb-1 text-secondary">Generation Settings</h2>
+        <p class="text-xs text-base-content/70">Configure your AI image creation.</p>
     </div>
-    <div class="flex gap-3">
-        <div>
+    <div>
 
-            Available Credits:
+        <div class="inline-flex stats shadow bg-base-200 stats-horizontal w-full rounded-xl">
+            <div class="stat p-3 sm:p-4">
+                <div class="stat-figure text-primary">
+                    <i class="fa-solid fa-cubes text-2xl"></i>
+                </div>
+                <div class="stat-title text-xs sm:text-sm">Available Credits</div>
+                <div id="available-credits" class="stat-value text-lg sm:text-2xl">{fmt.Sprintf("%d",
+                    data.Form.Credits)}
+                </div>
+                <div class="stat-desc text-xs">Ready to use</div>
+            </div>
+            <div class="stat p-3 sm:p-4">
+                <div class="stat-figure text-secondary">
+                    <i class="fa-solid fa-wand-magic-sparkles text-2xl"></i>
+                </div>
+                <div class="stat-title text-xs sm:text-sm">Cost Per Image</div>
+                <div class="stat-value text-lg sm:text-2xl">{ fmt.Sprintf("%d", data.Form.MinCost) }</div>
+                <div class="stat-desc text-xs"><i class="fa-solid fa-cubes text-primary text-xs"></i> / image</div>
+            </div>
+            <div class="stat p-3 sm:p-4 min-w-[160px]">
+                <div class="stat-figure text-accent flex items-center justify-center min-w-[32px] sm:min-w-[48px]">
+                    <i class="fa-solid fa-coins text-2xl text-accent shirnk-o"></i>
+                </div>
+                <div class="stat-title text-xs sm:text-sm">Estimated Total Cost</div>
+                <div id="estimated-cost" class="stat-value text-lg sm:text-2xl">0</div>
+                <div class="stat-desc text-xs">For this generation</div>
+            </div>
         </div>
-        <div class=""><i class="fa-solid fa-cubes text-primary"></i> {data.Form.Credits}</div>
+
+        <label class="label">
+            <span class="text-xs text-base-content/60">Scroll right to see calculated total cost --> </span>
+        </label>
+
     </div>
 
-    <div class="form-control">
-        <label class="label mb-3" for="prompt-textarea">
-            <span class="label-text font-medium ">Enter your prompt</span>
+    if err, ok := data.Errors["credits"]; ok {
+    <p class="text-error text-xs -mt-4 ml-1">{ err }</p>
+    }
+
+    // --- Input Box
+
+    <div class="form-control w-full">
+        <label class="label mb-2" for="prompt-textarea">
+            <span class="text-base font-semibold text-base-content">Your Creative Prompt</span>
         </label>
         <textarea id="prompt-textarea" name="prompt"
-            class="textarea textarea-border textarea-lg h-32 resize-none focus:outline-none"
-            placeholder="e.g. A majestic cat astronaut exploring a vibrant nebula"
-            required>{data.Form.Prompt}</textarea>
+            class="textarea textarea-lg w-full h-36 sm:h-40 resize-y ring-1 ring-base-300 focus:ring-2 focus:ring-primary bg-base-100 placeholder:text-base-content/50"
+            placeholder="e.g. A hyperrealistic portrait of a wise old owl wearing a steampunk monocle, intricate details, dramataic lighting"
+            required rows="5">{data.Form.Prompt}</textarea>
+        <label class="label mt-1">
+            <span class="text-xs text-base-content/60">The more detailed your prompt, the better the result</span>
+        </label>
 
         if err, ok := data.Errors["prompt"]; ok {
         <p class="text-error text-xs mt-1">{err}</p>
         }
     </div>
-    // --------------
-
+    // --- Image Count
 
     <div class="form-control">
-        <label class="label mb-3" for="image-count-input">
-            <span class="label-text font-medium">Number of images to generate</span>
-            <span class="tooltip" data-tip={fmt.Sprintf(" %d", data.Form.MinCost) + " credits per image" }>
-                <i class="fa-solid fa-circle-info"></i>
+        <label class="label mb-2" for="image-count-input">
+            <span class="text-base font-semibold text-base-content">Number of Images</span>
+            <span class="tooltip tooltip-left sm:tooltip-top" data-tip={ fmt.Sprintf("Each image costs %d credits.",
+                data.Form.MinCost) }>
+                <i class="fa-solid fa-circle-info text-base-content/70"></i>
             </span>
         </label>
-        <input id="image-count-input" type="number" name="image_count" placeholder="e.g., 4"
-            class="input input-bordered" value="1" min="1" max="10" />
-
+        <div class="join w-full">
+            <button type="button" id="decrement-images" class="btn join-item btn-outline btn-secondary">-</button>
+            <input id="image-count-input" type="number" name="image_count"
+                class="input join-item w-full text-center font-semibold ring-1 ring-base-300 focus:ring-2 focus:ring-primary bg-base-100"
+                value={ fmt.Sprintf("%d", data.Form.ImageCount) } min="1" max={ fmt.Sprintf("%d",
+                data.Form.MaxImagesPerGen) } required />
+            <button type="button" id="increment-images" class="btn join-item btn-outline btn-secondary">+</button>
+        </div>
         if err, ok := data.Errors["imageCount"]; ok {
-        <p class="text-error text-xs mt-1">{err}</p>
+        <p class="text-error text-xs mt-1">{ err }</p>
         }
-
     </div>
-    if err, ok := data.Errors["credits"]; ok {
-    <p class="text-error text-xs mt-1">{err}</p>
-    }
 
-
-    <div class="flex flex-col">
-        <button type="submit" class="btn btn-primary btn-block mt-8">
+    <div class="space-y-4 pt-6">
+        <button type="submit" class="btn btn-primary btn-block text-base">
+            <span id="generation-spinner-area" class="mr-2"></span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -65,16 +106,20 @@ templ GenForm(data VM.GenFormComponentData) {
             </svg>
             Generate Images
         </button>
-        <button hx-delete="/gen/image/failed" class="btn btn-block bg-red-500/60 hover:bg-red-500/50 mt-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+        if data.Form.HasFailedImages {
+        <button type="button" hx-delete="/gen/image/failed" hx-target="#gallery" hx-swap="innerHTML"
+            hx-confirm="Are you sure you want to clear all failed image placeholders?"
+            class="btn btn-block btn-outline btn-error text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
             Clear Failed Images
         </button>
+        }
     </div>
-</form>
 
+</form>
 
 }

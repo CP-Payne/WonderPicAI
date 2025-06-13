@@ -1,0 +1,52 @@
+package gen
+
+var GenCalculationJSHandle = templ.NewOnceHandle()
+
+templ GenCalculationJS() {
+@GenCalculationJSHandle.Once(){
+
+<script>
+    function bindGenFormEvents() {
+        const incrementBtn = document.getElementById("increment-images");
+        const decrementBtn = document.getElementById("decrement-images");
+        const imageCountInput = document.getElementById("image-count-input");
+        const estimatedCostDisplay = document.getElementById("estimated-cost");
+
+        if (!incrementBtn || !decrementBtn || !imageCountInput || !estimatedCostDisplay) return;
+
+        const costPerImage = parseInt(document.getElementById("gen-form").dataset.costPerImage || "0");
+
+        function updateCost() {
+            const count = parseInt(imageCountInput.value || "1");
+            estimatedCostDisplay.textContent = count * costPerImage;
+        }
+
+        incrementBtn.addEventListener("click", function () {
+            let current = parseInt(imageCountInput.value || "1");
+            imageCountInput.value = current + 1;
+            updateCost();
+        });
+
+        decrementBtn.addEventListener("click", function () {
+            let current = parseInt(imageCountInput.value || "1");
+            if (current > 1) {
+                imageCountInput.value = current - 1;
+                updateCost();
+            }
+        });
+
+        imageCountInput.addEventListener("input", updateCost);
+        updateCost();
+    }
+
+    document.addEventListener("DOMContentLoaded", bindGenFormEvents);
+
+    // Rebind after HTMX swaps
+    document.body.addEventListener("htmx:afterSwap", function (evt) {
+        if (evt.target.id === "gen-form" || evt.target.querySelector("#gen-form")) {
+            bindGenFormEvents();
+        }
+    });
+</script>
+}
+}
