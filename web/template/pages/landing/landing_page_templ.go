@@ -69,7 +69,7 @@ func LandingPage() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"hero min-h-[calc(100vh-var(--navbar-height,5rem))] bg-base-200 relative overflow-hidden\"><div class=\"hero-overlay bg-opacity-30 bg-gradient-to-br from-primary via-secondary to-accent mix-blend-multiply\"></div><div class=\"hero-content text-center text-neutral-content relative z-10 px-4\"><div class=\"max-w-2xl\"><h1 class=\"mb-5 text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight\">Unleash Your Visual Imagination with <span class=\"text-transparent bg-clip-text bg-gradient-to-r from-secondary to-accent\">WonderPicAI</span></h1><p class=\"mb-8 text-lg sm:text-xl opacity-90\">Transform your ideas into breathtaking images with the power of artificial intelligence. Simple, fast, and endlessly creative.</p><a href=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"hero min-h-[calc(100vh-var(--navbar-height,4rem))] bg-base-200 relative overflow-hidden\"><div class=\"hero-overlay bg-opacity-30 bg-gradient-to-br from-primary via-secondary to-accent mix-blend-multiply\"></div><div class=\"hero-content text-center text-neutral-content relative z-10 px-4\"><div class=\"max-w-2xl\"><h1 class=\"mb-5 text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight\">Unleash Your Visual Imagination with <span class=\"text-transparent bg-clip-text bg-gradient-to-r from-secondary to-accent\">WonderPicAI</span></h1><p class=\"mb-8 text-lg sm:text-xl opacity-90\">Transform your ideas into breathtaking images with the power of artificial intelligence. Simple, fast, and endlessly creative.</p><a href=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -109,7 +109,7 @@ func LandingPage() templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"w-full h-auto object-contain\"></div></div><div class=\"w-full md:w-1/2 lg:w-2/5 text-center md:text-left\"><h3 class=\"text-2xl sm:text-3xl font-semibold text-secondary mb-4\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"w-full h-auto object-contain img-crisp-hack\"></div></div><div class=\"w-full md:w-1/2 lg:w-2/5 text-center md:text-left\"><h3 class=\"text-2xl sm:text-3xl font-semibold text-secondary mb-4\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
