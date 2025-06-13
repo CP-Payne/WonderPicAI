@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/CP-Payne/wonderpicai/internal/config"
 	"github.com/CP-Payne/wonderpicai/internal/domain"
 	"github.com/CP-Payne/wonderpicai/internal/handler/http/response"
 	"github.com/CP-Payne/wonderpicai/internal/service"
@@ -47,7 +48,7 @@ func (h *AuthHandler) ShowLoginPage(w http.ResponseWriter, r *http.Request) {
 		Errors: make(map[string]string),
 		Error:  "",
 	}
-	err := authPages.AuthPage(authComponents.LoginForm(vm)).Render(r.Context(), w)
+	err := authPages.AuthPage(authComponents.LoginForm(vm), config.Cfg.GoogleAuth.ClientSecret).Render(r.Context(), w)
 	if err != nil {
 		h.logger.Error("Failed to render login page", zap.Error(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -66,7 +67,7 @@ func (h *AuthHandler) ShowSignupPage(w http.ResponseWriter, r *http.Request) {
 		Error:  "",
 	}
 
-	err := authPages.AuthPage(authComponents.SignupForm(vm)).Render(r.Context(), w)
+	err := authPages.AuthPage(authComponents.SignupForm(vm), config.Cfg.GoogleAuth.ClientSecret).Render(r.Context(), w)
 	if err != nil {
 		h.logger.Error("Failed to render login page", zap.Error(err))
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -253,4 +254,40 @@ func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	response.SetEmptyAuthCookie(w, r)
 
 	response.HxRedirect(w, r, "/auth/login")
+}
+
+func (h *AuthHandler) HandleExternalAuth(w http.ResponseWriter, r *http.Request) {
+
+	vm := viewmodel.LoginFormComponentData{
+		Form:   viewmodel.LoginFormData{},
+		Errors: make(map[string]string),
+		Error:  "",
+	}
+
+	user, token, err := h.authService.HandleExternalAuthCallback(r)
+	if err != nil {
+
+		vm.Error = "Something went wrong. Please try again."
+
+		h.logger.Error("General login validation error", zap.Error(err))
+
+		toastID, loadErr := response.LoadErrorToast(w, r, h.logger, vm.Error)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, toastID, "")
+			return
+		}
+
+		loadErr = response.LoadLoginForm(w, r, h.logger, vm)
+		if loadErr != nil {
+			response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+			return
+		}
+
+		return
+	}
+
+	h.logger.Info("User authenticated successfully", zap.String("userID", user.ID.String()))
+
+	response.SetAuthCookie(w, r, token)
+	response.HxRedirect(w, r, "/gen")
 }

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/CP-Payne/wonderpicai/internal/adapter/externalauth/googleprovider"
 	"github.com/CP-Payne/wonderpicai/internal/adapter/generation/comfylite"
 	"github.com/CP-Payne/wonderpicai/internal/adapter/paymentprovider/stripe"
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
@@ -40,6 +41,7 @@ func main() {
 	cancelURL := baseURL + "/purchase/cancel"
 
 	stripeProvider := stripe.NewProvider(logger, cfg.Stripe.Secret, cfg.Stripe.VerificationSecret, successURL, cancelURL)
+	googleAuthProvider := googleprovider.NewAuth(logger, cfg.GoogleAuth.ClientSecret)
 
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
@@ -47,7 +49,7 @@ func main() {
 	walletRepo := gormadapter.NewGormWalletRepository(db, logger)
 
 	walletSvc := service.NewWalletService(logger, walletRepo)
-	authSvc := service.NewAuthService(userRepo, tokenService, logger)
+	authSvc := service.NewAuthService(userRepo, tokenService, logger, googleAuthProvider)
 	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo, walletSvc)
 	purchaseSvc := service.NewPurchaseService(logger, walletSvc, stripeProvider, userRepo)
 

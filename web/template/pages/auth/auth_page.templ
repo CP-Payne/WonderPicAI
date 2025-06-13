@@ -6,7 +6,8 @@ authComponent "github.com/CP-Payne/wonderpicai/web/template/components/auth"
 "github.com/CP-Payne/wonderpicai/web/template"
 )
 
-templ AuthPage(formComponent templ.Component) {
+
+templ AuthPage(formComponent templ.Component, externalAuthSecret string) {
 @template.Base(false) {
 <div class="w-full min-h-screen p-4 flex items-center justify-center bg-base-300">
 	<a href="/" aria-label="Go back to landing page"
@@ -25,8 +26,20 @@ templ AuthPage(formComponent templ.Component) {
 			</a>
 		</div>
 		@formComponent
+
+		if externalAuthSecret != "" {
+
+		<div id="g_id_onload" data-client_id={externalAuthSecret} data-context="signin" data-ux_mode="popup"
+			data-login_uri="/auth/login/google/callback" data-auto_prompt="false">
+		</div>
+
+		<div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+			data-text="signin_with" data-size="large" data-logo_alignment="left">
+		</div>
+		}
 	</div>
 </div>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 @authComponent.ViewPasswordJS()
 @authComponent.PasswordMatchValidationJS()
 }
