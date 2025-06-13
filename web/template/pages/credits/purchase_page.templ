@@ -1,0 +1,33 @@
+package credits
+
+import "github.com/CP-Payne/wonderpicai/web/template"
+import "github.com/CP-Payne/wonderpicai/web/template/components/purchase"
+import "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
+
+
+
+templ PurchasePage(data viewmodel.PurchaseViewData) {
+@template.Base(true) {
+<div class="min-h-[calc(100vh-var(--navbar-height,5rem))] bg-base-200 py-12 sm:py-16 lg:py-20">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12 sm:mb-16">
+            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-primary mb-4">Purchase Credits</h1>
+            <p class="text-lg text-base-content/80 max-w-2xl mx-auto">
+                Unlock more image generations and premium features by purchasing credits. Choose the pack that suits you
+                best!
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl mx-auto">
+            for _, option := range data.Options{
+            @purchase.PurchaseOptionCard(option)
+            }
+        </div>
+
+        <div class="text-center mt-12 sm:mt-16 text-sm text-base-content/70">
+            <p>Credits are used for generating images. Larger packs offer better value.</p>
+        </div>
+    </div>
+</div>
+}
+}

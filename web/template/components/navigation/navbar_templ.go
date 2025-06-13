@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/CP-Payne/wonderpicai/web/template/components/ui"
-import "github.com/CP-Payne/wonderpicai/internal/auth"
+import "github.com/CP-Payne/wonderpicai/internal/context/auth"
 
 func Navbar() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {

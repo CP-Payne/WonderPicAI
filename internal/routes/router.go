@@ -6,12 +6,13 @@ import (
 	allHandlers "github.com/CP-Payne/wonderpicai/internal/handler/http"
 	"github.com/CP-Payne/wonderpicai/internal/middleware"
 	"github.com/CP-Payne/wonderpicai/internal/port"
+	"github.com/CP-Payne/wonderpicai/internal/service"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )
 
-func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenService port.TokenService) http.Handler {
+func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenService port.TokenService, walletService service.WalletService) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(chimiddleware.Logger)
@@ -26,6 +27,8 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 		w.Write([]byte("OK"))
 	})
 
+	// TODO: Add success and cancel page
+
 	r.Get("/", handlers.LandingHandler.ShowLandingPage)
 	r.Get("/error", handlers.ErrorHandler.ServeGenericErrorPage)
 
@@ -33,13 +36,27 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 
 	r.Route("/gen", func(r chi.Router) {
 		r.Use(middleware.WithAuth(logger, tokenService))
-		r.Get("/", handlers.GenHandler.ShowGenPage)
 
-		r.Post("/", handlers.GenHandler.HandleGenerationCreate)
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.WithCredits(logger, walletService))
+			r.Get("/", handlers.GenHandler.ShowGenPage)
+			r.Post("/", handlers.GenHandler.HandleGenerationCreate)
+		})
+
 		r.Get("/image/{id}/status", handlers.GenHandler.HandleImageStatus)
 		r.Delete("/image/{id}", handlers.GenHandler.HandleImageDelete)
 		r.Delete("/image/failed", handlers.GenHandler.HandleFailedImagesDelete)
 	})
+
+	r.Route("/purchase", func(r chi.Router) {
+		r.Use(middleware.WithAuth(logger, tokenService))
+		r.Get("/", handlers.PurchaseHandler.ShowPurchasePage)
+		r.Post("/{option}", handlers.PurchaseHandler.HandlePurchaseOption)
+	})
+
+	r.Get("/purchase/success", handlers.PurchaseHandler.ShowSuccessPage)
+	r.Get("/purchase/cancel", handlers.PurchaseHandler.ShowCancelPage)
+	r.Post("/purchase/webhook", handlers.PurchaseHandler.HandlePurchaseEvents)
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Get("/login", handlers.AuthHandler.ShowLoginPage)

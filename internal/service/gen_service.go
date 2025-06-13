@@ -15,6 +15,7 @@ import (
 // TODO: Pass in context from handler
 type GenService interface {
 	GenerateImage(ctx context.Context, userID uuid.UUID, promptData *PromptData) (*domain.Prompt, error)
+	CalculateCost(ctx context.Context, promptData *PromptData) int
 	GetAllPrompts(ctx context.Context, userID uuid.UUID) ([]domain.Prompt, error)
 	UpdatePlaceholderImages(externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error)
 	GetImageByID(ctx context.Context, userID uuid.UUID, imageID uuid.UUID) (image *domain.Image, err error)
@@ -28,23 +29,26 @@ type PromptData struct {
 }
 
 const (
-	IMAGE_WIDTH  = 500
-	IMAGE_HEIGHT = 500
+	IMAGE_WIDTH     = 500
+	IMAGE_HEIGHT    = 500
+	GENERATION_COST = 2
 )
 
 type genService struct {
 	logger         *zap.Logger
 	imageGenClient port.ImageGeneration
+	walletService  WalletService
 	promptRepo     port.PromptRepository
 	imageRepo      port.ImageRepository
 }
 
-func NewGenService(logger *zap.Logger, genClient port.ImageGeneration, promptRepo port.PromptRepository, imageRepo port.ImageRepository) GenService {
+func NewGenService(logger *zap.Logger, genClient port.ImageGeneration, promptRepo port.PromptRepository, imageRepo port.ImageRepository, walletService WalletService) GenService {
 	return &genService{
 		logger:         logger.With(zap.String("component", "GenService")),
 		imageGenClient: genClient,
 		promptRepo:     promptRepo,
 		imageRepo:      imageRepo,
+		walletService:  walletService,
 	}
 }
 
@@ -57,9 +61,30 @@ func (s *genService) GenerateImage(ctx context.Context, userID uuid.UUID, data *
 		Height:     IMAGE_HEIGHT,
 	}
 
+	totalCost := s.CalculateCost(ctx, data)
+
+	err := s.walletService.DeductForImageGeneration(ctx, userID, totalCost)
+	if err != nil {
+		if errors.Is(err, domain.ErrInsufficientFunds) {
+			s.logger.Error("Failed to deduct credits for image generation", zap.String("userID", userID.String()), zap.Int("totalCost", totalCost), zap.Error(err))
+			return nil, err
+		}
+
+		s.logger.Error("Failed to deduct credits for image generation", zap.String("userID", userID.String()), zap.Int("totalCost", totalCost), zap.Error(err))
+		return nil, fmt.Errorf("failed to deduct credits for image generation: %w", err)
+	}
+
 	externalPromptID, err := s.imageGenClient.GenerateImage(&clientReqData)
 	if err != nil {
-		s.logger.Error("Failed to send image generation request to image generation server", zap.Error(err))
+		s.logger.Error("Failed to send image generation request", zap.Error(err))
+		s.logger.Info("Refunding credits", zap.Error(err))
+		err = s.walletService.RefundCredits(ctx, userID, totalCost)
+		if err != nil {
+			s.logger.Error("CRITICAL: Failed to refund credits", zap.String("userID", userID.String()), zap.Error(err), zap.Int("totalCost", totalCost))
+			return nil, fmt.Errorf("failed refunding credits after failed generation request: %w", err)
+		}
+
+		return nil, fmt.Errorf("failed to initiate image generation - credits refunded: %w", err)
 	}
 
 	s.logger.Debug("External Prompt Received", zap.String("ExternalPromptID", externalPromptID.String()))
@@ -72,7 +97,7 @@ func (s *genService) GenerateImage(ctx context.Context, userID uuid.UUID, data *
 		},
 		UserID:           userID,
 		ExternalPromptID: externalPromptID,
-		Cost:             1,
+		Cost:             totalCost,
 		ImageCount:       data.ImageCount,
 		Width:            IMAGE_WIDTH,
 		Height:           IMAGE_HEIGHT,
@@ -88,6 +113,14 @@ func (s *genService) GenerateImage(ctx context.Context, userID uuid.UUID, data *
 
 	return promptCreated, nil
 
+}
+
+func (s *genService) CalculateCost(ctx context.Context, data *PromptData) int {
+	if data == nil {
+		return 0
+	}
+
+	return data.ImageCount * GENERATION_COST
 }
 
 func (s *genService) GetAllPrompts(ctx context.Context, userID uuid.UUID) ([]domain.Prompt, error) {

@@ -42,6 +42,11 @@ func ConnectDatabase(dsn, appEnv, logLevel string, appLogger *zap.Logger) {
 			appLogger.Error("Failed to drop table users", zap.Error(err))
 		}
 
+		err = DB.Migrator().DropTable(&domain.Wallet{})
+		if err != nil {
+			appLogger.Error("Failed to drop table wallets", zap.Error(err))
+		}
+
 		err = DB.Migrator().DropTable(&domain.Prompt{})
 		if err != nil {
 			appLogger.Error("Failed to drop table prompts", zap.Error(err))
@@ -53,6 +58,10 @@ func ConnectDatabase(dsn, appEnv, logLevel string, appLogger *zap.Logger) {
 	}
 
 	err = DB.AutoMigrate(&domain.User{})
+	if err != nil {
+		appLogger.Fatal("Failed to auto-migrate database schema", zap.Error(err))
+	}
+	err = DB.AutoMigrate(&domain.Wallet{})
 	if err != nil {
 		appLogger.Fatal("Failed to auto-migrate database schema", zap.Error(err))
 	}

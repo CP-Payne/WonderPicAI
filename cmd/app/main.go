@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/CP-Payne/wonderpicai/internal/adapter/generation/comfylite"
+	"github.com/CP-Payne/wonderpicai/internal/adapter/paymentprovider/stripe"
 	gormadapter "github.com/CP-Payne/wonderpicai/internal/adapter/persistence/gorm"
 	"github.com/CP-Payne/wonderpicai/internal/adapter/tokenservice"
 	appconfig "github.com/CP-Payne/wonderpicai/internal/config"
@@ -31,19 +33,27 @@ func main() {
 	db := gormadapter.DB
 
 	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
-	// TODO: Move ip to .env
-	genClient := comfylite.NewClient(logger, "http://172.24.192.1:8081")
+	genClient := comfylite.NewClient(logger, fmt.Sprintf("http://%s:%s", cfg.ComfyLite.Host, cfg.ComfyLite.Port))
+
+	baseURL := "http://localhost:" + cfg.Server.Port
+	successURL := baseURL + "/purchase/success"
+	cancelURL := baseURL + "/purchase/cancel"
+
+	stripeProvider := stripe.NewProvider(logger, cfg.Stripe.Secret, cfg.Stripe.VerificationSecret, successURL, cancelURL)
 
 	userRepo := gormadapter.NewGormUserRepository(db, logger)
 	promptRepo := gormadapter.NewGormPromptRepository(db, logger)
 	imageRepo := gormadapter.NewGormImageRepository(db, logger)
+	walletRepo := gormadapter.NewGormWalletRepository(db, logger)
 
+	walletSvc := service.NewWalletService(logger, walletRepo)
 	authSvc := service.NewAuthService(userRepo, tokenService, logger)
-	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo)
+	genSvc := service.NewGenService(logger, genClient, promptRepo, imageRepo, walletSvc)
+	purchaseSvc := service.NewPurchaseService(logger, walletSvc, stripeProvider, userRepo)
 
-	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, logger)
+	apiHandlers := allHandlers.NewApiHandlers(authSvc, genSvc, purchaseSvc, logger)
 
-	router := routes.NewRouter(apiHandlers, logger, tokenService)
+	router := routes.NewRouter(apiHandlers, logger, tokenService, walletSvc)
 
 	logger.Info("Server starting",
 		zap.String("address", "http://0.0.0.0:"+cfg.Server.Port),
