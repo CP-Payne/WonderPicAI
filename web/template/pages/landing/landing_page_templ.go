@@ -17,19 +17,19 @@ var appScreenshots = []struct {
 	FeatureName string
 }{
 	{
-		Src:         "/static/img/screenshots/generation-page.webp",
+		Src:         "/static/assets/images/screenshots/gen-page.png",
 		Alt:         "WonderPicAI Image Generation Interface",
 		Caption:     "Craft stunning visuals with our intuitive AI image generator. Describe your vision, and watch it come to life.",
 		FeatureName: "Powerful AI Generation",
 	},
 	{
-		Src:         "/static/img/screenshots/credits-page.webp",
+		Src:         "/static/assets/images/screenshots/credits-page.png",
 		Alt:         "WonderPicAI Credits Purchase Page",
 		Caption:     "Flexible credit packs to fuel your creativity. Get started easily and scale as you need.",
 		FeatureName: "Simple Credit System",
 	},
 	{
-		Src:         "/static/img/screenshots/stripe-checkout.webp",
+		Src:         "/static/assets/images/screenshots/stripe-checkout.png",
 		Alt:         "WonderPicAI Stripe Checkout Page",
 		Caption:     "Secure payments powered by Stripe. Choose the plan that fits your creative needs and check out with confidence.",
 		FeatureName: "Secure Stripe Checkout",
