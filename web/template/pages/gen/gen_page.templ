@@ -5,6 +5,7 @@ import (
 "github.com/CP-Payne/wonderpicai/web/template"
 VM "github.com/CP-Payne/wonderpicai/web/template/viewmodel"
 gencomponent "github.com/CP-Payne/wonderpicai/web/template/components/gen"
+
 )
 
 templ GenPage(data VM.GenPageData) {
@@ -20,5 +21,6 @@ templ GenPage(data VM.GenPageData) {
         @gencomponent.Gallery(data.GalleryData)
     </div>
 </div>
+@gencomponent.GenCalculationJS()
 }
 }

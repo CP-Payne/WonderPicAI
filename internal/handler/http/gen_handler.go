@@ -76,9 +76,14 @@ func (h *GenHandler) ShowGenPage(w http.ResponseWriter, r *http.Request) {
 		images = []viewmodel.Image{}
 	}
 
+	containsFailedImages := false
+
 	// Extract images from prompts
 	for _, prompt := range userPrompts {
 		for _, img := range prompt.Images {
+			if img.Status == domain.Failed {
+				containsFailedImages = true
+			}
 			images = append(images, viewmodel.Image{
 				ID:     img.ID.String(),
 				Data:   base64.StdEncoding.EncodeToString(img.ImageData),
@@ -98,8 +103,11 @@ func (h *GenHandler) ShowGenPage(w http.ResponseWriter, r *http.Request) {
 		},
 		GenFormData: viewmodel.GenFormComponentData{
 			Form: viewmodel.GenFormData{
-				MinCost: minCost,
-				Credits: userCredits,
+				MinCost:         minCost,
+				Credits:         userCredits,
+				MaxImagesPerGen: 10,
+				HasFailedImages: containsFailedImages,
+				ImageCount:      1,
 			},
 			Errors: map[string]string{},
 			Error:  "",
@@ -120,6 +128,13 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	userID, err := auth.UserID(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to get UserID from context")
+		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
+		return
+	}
+
 	// Get user credits
 	userCredits, err := credits.RemainingCredits(r.Context())
 	if err != nil {
@@ -128,12 +143,19 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	containsFailedImages, err := h.genService.ContainsFailedImages(r.Context(), userID)
+	if err != nil {
+		h.logger.Error("failed to determine if user has failed images defaulting to false", zap.Error(err))
+		containsFailedImages = false
+	}
+
 	vm := viewmodel.GenFormComponentData{
 		Form: viewmodel.GenFormData{
-			Prompt:  r.FormValue("prompt"),
-			Number:  1,
-			Credits: userCredits,
-			MinCost: h.genService.CalculateCost(r.Context(), &service.PromptData{ImageCount: 1}),
+			Prompt:          r.FormValue("prompt"),
+			Credits:         userCredits,
+			MinCost:         h.genService.CalculateCost(r.Context(), &service.PromptData{ImageCount: 1}),
+			MaxImagesPerGen: 10,
+			HasFailedImages: containsFailedImages,
 		},
 		Errors: map[string]string{},
 		Error:  "",
@@ -157,6 +179,7 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 		Prompt:     r.FormValue("prompt"),
 		ImageCount: imageCount,
 	}
+	vm.Form.ImageCount = req.ImageCount
 
 	err = h.validate.Struct(req)
 	if err != nil {
@@ -207,13 +230,6 @@ func (h *GenHandler) HandleGenerationCreate(w http.ResponseWriter, r *http.Reque
 	}
 
 	// --- Check
-
-	userID, err := auth.UserID(r.Context())
-	if err != nil {
-		h.logger.Error("Failed to get UserID from context")
-		response.HxRedirectErrorPage(w, r, http.StatusInternalServerError, "", "")
-		return
-	}
 
 	prompt, err := h.genService.GenerateImage(r.Context(), userID, &service.PromptData{
 		Prompt:     req.Prompt,

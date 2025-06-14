@@ -27,7 +27,7 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 		w.Write([]byte("OK"))
 	})
 
-	r.Get("/", handlers.LandingHandler.ShowLandingPage)
+	r.With(middleware.RedirectIfAuthCookie("/gen")).Get("/", handlers.LandingHandler.ShowLandingPage)
 	r.Get("/error", handlers.ErrorHandler.ServeGenericErrorPage)
 
 	r.Post("/gen/update", handlers.GenHandler.HandleImageCompletionWebhook)
@@ -59,12 +59,17 @@ func NewRouter(handlers *allHandlers.ApiHandlers, logger *zap.Logger, tokenServi
 	r.Post("/auth/login/google/callback", handlers.AuthHandler.HandleExternalAuth)
 
 	r.Route("/auth", func(r chi.Router) {
-		r.Get("/login", handlers.AuthHandler.ShowLoginPage)
-		r.Get("/signup", handlers.AuthHandler.ShowSignupPage)
 
 		r.Post("/logout", handlers.AuthHandler.HandleLogout)
-		r.Post("/signup", handlers.AuthHandler.HandleSignup)
-		r.Post("/login", handlers.AuthHandler.HandleLogin)
+
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.RedirectIfAuthCookie("/gen"))
+			r.Get("/login", handlers.AuthHandler.ShowLoginPage)
+			r.Get("/signup", handlers.AuthHandler.ShowSignupPage)
+
+			r.Post("/signup", handlers.AuthHandler.HandleSignup)
+			r.Post("/login", handlers.AuthHandler.HandleLogin)
+		})
 	})
 
 	return r

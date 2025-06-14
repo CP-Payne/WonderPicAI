@@ -89,3 +89,28 @@ func (r *gormImageRepository) DeleteFailed(ctx context.Context, userID uuid.UUID
 
 	return nil
 }
+
+func (r *gormImageRepository) ContainsFailedImages(ctx context.Context, userID uuid.UUID) (bool, error) {
+
+	var exists bool
+
+	subQuery := r.db.Model(&domain.Prompt{}).Select("id").Where("user_id = ?", userID)
+
+	result := r.db.WithContext(ctx).
+		Model(&domain.Image{}).
+		Select("1").
+		Where("status = ?", domain.Failed).
+		Where("prompt_id IN (?)", subQuery).
+		Limit(1).
+		Scan(&exists)
+
+	if result.Error != nil {
+		r.logger.Error("Failed to determine if failed images exist",
+			zap.String("userID", userID.String()),
+			zap.Error(result.Error),
+		)
+		return false, fmt.Errorf("database error while finding failed images: %w", result.Error)
+	}
+
+	return exists, nil
+}

@@ -10,19 +10,19 @@ Caption string
 FeatureName string
 }{
 {
-Src: "/static/img/screenshots/generation-page.webp",
+Src: "/static/assets/images/screenshots/gen-page.png",
 Alt: "WonderPicAI Image Generation Interface",
 Caption: "Craft stunning visuals with our intuitive AI image generator. Describe your vision, and watch it come to life.",
 FeatureName: "Powerful AI Generation",
 },
 {
-Src: "/static/img/screenshots/credits-page.webp",
+Src: "/static/assets/images/screenshots/credits-page.png",
 Alt: "WonderPicAI Credits Purchase Page",
 Caption: "Flexible credit packs to fuel your creativity. Get started easily and scale as you need.",
 FeatureName: "Simple Credit System",
 },
 {
-Src: "/static/img/screenshots/stripe-checkout.webp",
+Src: "/static/assets/images/screenshots/stripe-checkout.png",
 Alt: "WonderPicAI Stripe Checkout Page",
 Caption: "Secure payments powered by Stripe. Choose the plan that fits your creative needs and check out with confidence.",
 FeatureName: "Secure Stripe Checkout",
@@ -31,7 +31,7 @@ FeatureName: "Secure Stripe Checkout",
 
 templ LandingPage() {
 @template.Base(true) {
-<div class="hero min-h-[calc(100vh-var(--navbar-height,5rem))] bg-base-200 relative overflow-hidden">
+<div class="hero min-h-[calc(100vh-var(--navbar-height,4rem))] bg-base-200 relative overflow-hidden">
 	<div class="hero-overlay bg-opacity-30 bg-gradient-to-br from-primary via-secondary to-accent mix-blend-multiply">
 	</div>
 	<div class="hero-content text-center text-neutral-content relative z-10 px-4">
@@ -74,7 +74,7 @@ templ LandingPage() {
 				<div class="w-full md:w-1/2 lg:w-3/5">
 					<div
 						class="rounded-xl shadow-2xl overflow-hidden border-4 border-base-300 transform transition-all duration-300 hover:scale-105 hover:shadow-primary/30">
-						<img src={ shot.Src } alt={ shot.Alt } class="w-full h-auto object-contain" />
+						<img src={ shot.Src } alt={ shot.Alt } class="w-full h-auto object-contain img-crisp-hack" />
 					</div>
 				</div>
 				<div class="w-full md:w-1/2 lg:w-2/5 text-center md:text-left">

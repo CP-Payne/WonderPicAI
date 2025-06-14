@@ -35,7 +35,7 @@ func ConnectDatabase(dsn, appEnv, logLevel string, appLogger *zap.Logger) {
 
 	appLogger.Info("Database connection established.")
 
-	if appEnv != "production" {
+	if appEnv == "production<TODO:REMOVE>" {
 
 		err = DB.Migrator().DropTable(&domain.User{})
 		if err != nil {

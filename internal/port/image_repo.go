@@ -11,4 +11,5 @@ type ImageRepository interface {
 	GetByID(ctx context.Context, userID uuid.UUID, imageID uuid.UUID) (*domain.Image, error)
 	Delete(ctx context.Context, userID uuid.UUID, imageID uuid.UUID) error
 	DeleteFailed(ctx context.Context, userID uuid.UUID) error
+	ContainsFailedImages(ctx context.Context, userID uuid.UUID) (bool, error)
 }

@@ -1,10 +1,12 @@
 package viewmodel
 
 type GenFormData struct {
-	Prompt  string
-	Number  int
-	Credits int
-	MinCost int
+	Prompt          string
+	Credits         int
+	MinCost         int
+	MaxImagesPerGen int
+	ImageCount      int
+	HasFailedImages bool
 }
 
 type GenFormComponentData struct {
