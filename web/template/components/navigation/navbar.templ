@@ -45,18 +45,11 @@ templ Navbar() {
 			</ul>
 		</div>
 		}
-		if auth.IsAuthenticated(ctx) {
 
-		<a class="btn btn-ghost text-xl sm:text-2xl md:text-3xl text-primary hover:bg-transparent normal-case" href={
-			templ.URL("/gen") } aria-label="WonderPicAI Home">
-			WonderPicAI
-		</a>
-		} else {
 		<a class="btn btn-ghost text-xl sm:text-2xl md:text-3xl text-primary hover:bg-transparent normal-case" href={
 			templ.URL("/") } aria-label="WonderPicAI Home">
 			WonderPicAI
 		</a>
-		}
 	</div>
 
 	<div class="navbar-center hidden lg:flex">
