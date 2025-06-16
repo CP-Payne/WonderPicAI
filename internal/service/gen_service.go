@@ -79,10 +79,10 @@ func (s *genService) GenerateImage(ctx context.Context, userID uuid.UUID, data *
 	if err != nil {
 		s.logger.Error("Failed to send image generation request", zap.Error(err))
 		s.logger.Info("Refunding credits", zap.Error(err))
-		err = s.walletService.RefundCredits(ctx, userID, totalCost)
-		if err != nil {
-			s.logger.Error("CRITICAL: Failed to refund credits", zap.String("userID", userID.String()), zap.Error(err), zap.Int("totalCost", totalCost))
-			return nil, fmt.Errorf("failed refunding credits after failed generation request: %w", err)
+		refundErr := s.walletService.RefundCredits(ctx, userID, totalCost)
+		if refundErr != nil {
+			s.logger.Error("CRITICAL: Failed to refund credits", zap.String("userID", userID.String()), zap.Error(refundErr), zap.Int("totalCost", totalCost))
+			return nil, fmt.Errorf("failed refunding credits after failed generation request: %w", refundErr)
 		}
 
 		return nil, fmt.Errorf("failed to initiate image generation - credits refunded: %w", err)
