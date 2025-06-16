@@ -34,7 +34,7 @@ func main() {
 	db := gormadapter.DB
 
 	tokenService := tokenservice.NewTokenService(cfg.JWT.SecretKey, cfg.JWT.Issuer)
-	genClient := comfylite.NewClient(logger, fmt.Sprintf("http://%s:%s", cfg.ComfyLite.Host, cfg.ComfyLite.Port))
+	genClient := comfylite.NewClient(logger, fmt.Sprintf("http://%s:%s", cfg.ComfyLite.Host, cfg.ComfyLite.Port), fmt.Sprintf("http://localhost:%s/gen/update", cfg.Server.Port))
 
 	baseURL := "http://localhost:" + cfg.Server.Port
 	successURL := baseURL + "/purchase/success"

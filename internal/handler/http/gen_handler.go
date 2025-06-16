@@ -35,8 +35,10 @@ type GenRequest struct {
 }
 
 type ImageUpdateWebhookRequest struct {
+	Status   string   `json:"status"`
 	PromptID string   `json:"prompt_id"`
 	Images   []string `json:"images"`
+	Error    string   `json:"error"`
 }
 
 func NewGenHandler(logger *zap.Logger, validate *validator.Validate, genService service.GenService) *GenHandler {
@@ -278,45 +280,72 @@ func (h *GenHandler) HandleImageCompletionWebhook(w http.ResponseWriter, r *http
 	request := ImageUpdateWebhookRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		h.logger.Error("failed decoding webhook image update request", zap.Error(err))
+		h.logger.Error("failed to decode webhook request body", zap.Error(err))
+		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	// h.logger.Debug("DATA RECEIVED FROM WEBHOOK", zap.Any("data", request))
+	externalPromptID, err := uuid.Parse(request.PromptID)
+	if err != nil {
+		h.logger.Error("webhook received with invalid promptID format", zap.String("promptID", request.PromptID), zap.Error(err))
+		http.Error(w, "invalid prompt_id format", http.StatusBadRequest)
+		return
+	}
 
-	if request.PromptID == "" {
-		h.logger.Warn("no promptID received from webhook")
+	if request.Status == "failure" {
+		h.logger.Warn("received failure webhook for prompt",
+			zap.String("promptID", request.PromptID),
+			zap.String("error", request.Error),
+		)
+
+		_, err := h.genService.UpdatePlaceholderImages(r.Context(), externalPromptID, [][]byte{}, domain.Failed)
+		if err != nil {
+			h.logger.Error("failed to update prompt status to failed",
+				zap.String("promptID", request.PromptID),
+				zap.Error(err),
+			)
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	if len(request.Images) == 0 {
-
-		h.logger.Warn("no images to update received from webhook")
+		h.logger.Error("success webhook received with no images", zap.String("promptID", request.PromptID))
+		http.Error(w, "no images provided in success payload", http.StatusBadRequest)
 		return
 	}
 
-	imagesDecoded := [][]byte{}
+	imagesDecoded := make([][]byte, 0, len(request.Images))
 
-	for _, imageData := range request.Images {
+	for i, imageData := range request.Images {
 		decoded, err := base64.StdEncoding.DecodeString(imageData)
 		if err != nil {
-			h.logger.Error("image base64 could not be decoded", zap.Error(err))
+			h.logger.Error("image base64 could not be decoded",
+				zap.String("promptID", request.PromptID),
+				zap.Int("imageIndex", i),
+				zap.Error(err),
+			)
+			http.Error(w, fmt.Sprintf("invalid base64 data for image at index %d", i), http.StatusBadRequest)
 			return
 		}
 		imagesDecoded = append(imagesDecoded, decoded)
 	}
 
-	externalPromptID, err := uuid.Parse(request.PromptID)
+	_, err = h.genService.UpdatePlaceholderImages(r.Context(), externalPromptID, imagesDecoded, domain.Completed)
 	if err != nil {
-		h.logger.Warn("failed to convert promptID into uuid")
+		h.logger.Error("failed to update placeholder images to status completed",
+			zap.String("promptID", request.PromptID),
+			zap.Error(err),
+		)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = h.genService.UpdatePlaceholderImages(externalPromptID, imagesDecoded)
-	if err != nil {
-		h.logger.Warn("failed to update placeholder images")
-		return
-	}
+	h.logger.Info("successfully processed completion webhook", zap.String("promptID", request.PromptID))
+	w.WriteHeader(http.StatusOK)
 
 }
 
