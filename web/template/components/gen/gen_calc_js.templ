@@ -23,8 +23,10 @@ templ GenCalculationJS() {
 
         incrementBtn.addEventListener("click", function () {
             let current = parseInt(imageCountInput.value || "1");
-            imageCountInput.value = current + 1;
-            updateCost();
+            if (current < 10) {
+                imageCountInput.value = current + 1;
+                updateCost();
+            }
         });
 
         decrementBtn.addEventListener("click", function () {

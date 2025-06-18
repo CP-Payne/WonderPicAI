@@ -17,7 +17,7 @@ type GenService interface {
 	GenerateImage(ctx context.Context, userID uuid.UUID, promptData *PromptData) (*domain.Prompt, error)
 	CalculateCost(ctx context.Context, promptData *PromptData) int
 	GetAllPrompts(ctx context.Context, userID uuid.UUID) ([]domain.Prompt, error)
-	UpdatePlaceholderImages(externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error)
+	UpdatePlaceholderImages(ctx context.Context, externalPromptID uuid.UUID, images [][]byte, desiredStatus domain.Status) (*domain.Prompt, error)
 	GetImageByID(ctx context.Context, userID uuid.UUID, imageID uuid.UUID) (image *domain.Image, err error)
 	DeleteImageByID(ctx context.Context, userID uuid.UUID, imageID uuid.UUID) error
 	DeleteFailedImages(ctx context.Context, userID uuid.UUID) error
@@ -79,10 +79,10 @@ func (s *genService) GenerateImage(ctx context.Context, userID uuid.UUID, data *
 	if err != nil {
 		s.logger.Error("Failed to send image generation request", zap.Error(err))
 		s.logger.Info("Refunding credits", zap.Error(err))
-		err = s.walletService.RefundCredits(ctx, userID, totalCost)
-		if err != nil {
-			s.logger.Error("CRITICAL: Failed to refund credits", zap.String("userID", userID.String()), zap.Error(err), zap.Int("totalCost", totalCost))
-			return nil, fmt.Errorf("failed refunding credits after failed generation request: %w", err)
+		refundErr := s.walletService.RefundCredits(ctx, userID, totalCost)
+		if refundErr != nil {
+			s.logger.Error("CRITICAL: Failed to refund credits", zap.String("userID", userID.String()), zap.Error(refundErr), zap.Int("totalCost", totalCost))
+			return nil, fmt.Errorf("failed refunding credits after failed generation request: %w", refundErr)
 		}
 
 		return nil, fmt.Errorf("failed to initiate image generation - credits refunded: %w", err)
@@ -134,9 +134,9 @@ func (s *genService) GetAllPrompts(ctx context.Context, userID uuid.UUID) ([]dom
 	return prompts, nil
 }
 
-func (s *genService) UpdatePlaceholderImages(externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error) {
+func (s *genService) UpdatePlaceholderImages(ctx context.Context, externalPromptID uuid.UUID, images [][]byte, desiredStatus domain.Status) (*domain.Prompt, error) {
 
-	prompt, err := s.promptRepo.UpdatePlaceholderImages(context.Background(), externalPromptID, images)
+	prompt, err := s.promptRepo.UpdatePlaceholderImages(ctx, externalPromptID, images, desiredStatus)
 	if err != nil {
 		s.logger.Error("Failed to update image placeholders", zap.String("ExternalPromptID", externalPromptID.String()), zap.Error(err))
 		return nil, fmt.Errorf("failed to update image placeholders using prompt repository: %w", err)

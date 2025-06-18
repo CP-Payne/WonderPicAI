@@ -73,11 +73,82 @@ func (r *gormPromptRepository) FindAllByUser(ctx context.Context, userID uuid.UU
 	return prompts, nil
 }
 
-func (r *gormPromptRepository) UpdatePlaceholderImages(ctx context.Context, externalPromptID uuid.UUID, images [][]byte) (*domain.Prompt, error) {
+// func (r *gormPromptRepository) UpdatePlaceholderImages(ctx context.Context, externalPromptID uuid.UUID, images [][]byte, status domain.Status) (*domain.Prompt, error) {
+// 	var prompt domain.Prompt
+// 	var finalErr error
+
+// 	txErr := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+// 		if err := tx.Where("external_prompt_id = ?", externalPromptID).First(&prompt).Error; err != nil {
+// 			r.logger.Warn("External prompt ID does not exist in database", zap.String("externalPromptID", externalPromptID.String()))
+// 			return err
+// 		}
+
+// 		var placeholderImages []domain.Image
+// 		if err := tx.Where("prompt_id = ? AND status = ?", prompt.ID, domain.Pending).Find(&placeholderImages).Error; err != nil {
+// 			finalErr = fmt.Errorf("failed to find placeholder images: %w", err)
+// 			prompt.Status = domain.Failed
+// 		}
+
+// 		if finalErr == nil {
+// 			if len(placeholderImages) != len(images) {
+// 				finalErr = fmt.Errorf("mismatch: expected %d images, but %d was provided", len(placeholderImages), len(images))
+// 				prompt.Status = domain.Failed
+// 			} else {
+// 				for i, imageData := range images {
+// 					imageToUpdate := &placeholderImages[i]
+// 					imageToUpdate.ImageData = imageData
+// 					imageToUpdate.UpdatedAt = time.Now()
+// 					imageToUpdate.Status = status
+
+// 					if err := tx.Save(imageToUpdate).Error; err != nil {
+// 						finalErr = fmt.Errorf("failed to save image index %d: %w", i, err)
+// 						prompt.Status = domain.Failed
+// 						break
+// 					}
+// 				}
+// 			}
+// 		}
+
+// 		if finalErr == nil {
+// 			prompt.Status = status
+// 			prompt.Images = placeholderImages
+// 		}
+
+// 		if prompt.Status == domain.Failed {
+// 			if err := tx.Model(&domain.Image{}).Where("prompt_id = ?", prompt.ID).Update("status", domain.Failed).Error; err != nil {
+// 				r.logger.Error("CRITICAL: Failed to update images to FAILED status", zap.Error(err))
+// 				return err
+// 			}
+// 		}
+
+// 		if err := tx.Save(&prompt).Error; err != nil {
+// 			r.logger.Error("CRITICAL: Failed to save final prompt status", zap.Error(err))
+// 			return err // Abort transaction!
+// 		}
+
+// 		return nil
+// 	})
+
+// 	if txErr != nil {
+// 		r.logger.Error("Transaction rolled back due to fatal error", zap.Error(txErr))
+// 		return nil, fmt.Errorf("database transaction failed: %w", txErr)
+// 	}
+
+// 	if finalErr != nil {
+// 		r.logger.Error("Image update operation failed", zap.Error(finalErr))
+// 		return nil, finalErr
+// 	}
+
+// 	// Success!
+// 	return &prompt, nil
+// }
+
+func (r *gormPromptRepository) UpdatePlaceholderImages(ctx context.Context, externalPromptID uuid.UUID, images [][]byte, desiredStatus domain.Status) (*domain.Prompt, error) {
 	var prompt domain.Prompt
 	var finalErr error
 
 	txErr := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+
 		if err := tx.Where("external_prompt_id = ?", externalPromptID).First(&prompt).Error; err != nil {
 			r.logger.Warn("External prompt ID does not exist in database", zap.String("externalPromptID", externalPromptID.String()))
 			return err
@@ -86,46 +157,42 @@ func (r *gormPromptRepository) UpdatePlaceholderImages(ctx context.Context, exte
 		var placeholderImages []domain.Image
 		if err := tx.Where("prompt_id = ? AND status = ?", prompt.ID, domain.Pending).Find(&placeholderImages).Error; err != nil {
 			finalErr = fmt.Errorf("failed to find placeholder images: %w", err)
-			prompt.Status = domain.Failed
 		}
 
 		if finalErr == nil {
 			if len(placeholderImages) != len(images) {
 				finalErr = fmt.Errorf("mismatch: expected %d images, but %d was provided", len(placeholderImages), len(images))
-				prompt.Status = domain.Failed
 			} else {
+				//  update the data in memory first.
 				for i, imageData := range images {
-					imageToUpdate := &placeholderImages[i]
-					imageToUpdate.ImageData = imageData
-					imageToUpdate.UpdatedAt = time.Now()
-					imageToUpdate.Status = domain.Completed
-
-					if err := tx.Save(imageToUpdate).Error; err != nil {
-						finalErr = fmt.Errorf("failed to save image index %d: %w", i, err)
-						prompt.Status = domain.Failed
-						break
-					}
+					placeholderImages[i].ImageData = imageData
+					placeholderImages[i].UpdatedAt = time.Now()
 				}
 			}
 		}
 
-		if finalErr == nil {
-			prompt.Status = domain.Completed
-			prompt.Images = placeholderImages
+		finalStatus := desiredStatus
+		if finalErr != nil {
+			finalStatus = domain.Failed
 		}
 
-		if prompt.Status == domain.Failed {
-			if err := tx.Model(&domain.Image{}).Where("prompt_id = ?", prompt.ID).Update("status", domain.Failed).Error; err != nil {
-				r.logger.Error("CRITICAL: Failed to update images to FAILED status", zap.Error(err))
-				return err
-			}
+		prompt.Status = finalStatus
+
+		for i := range placeholderImages {
+			placeholderImages[i].Status = finalStatus
+		}
+
+		if err := tx.Save(&placeholderImages).Error; err != nil {
+			r.logger.Error("CRITICAL: Failed to save updated images", zap.Error(err), zap.String("promptID", prompt.ID.String()))
+			return err
 		}
 
 		if err := tx.Save(&prompt).Error; err != nil {
-			r.logger.Error("CRITICAL: Failed to save final prompt status", zap.Error(err))
-			return err // Abort transaction!
+			r.logger.Error("CRITICAL: Failed to save final prompt status", zap.Error(err), zap.String("promptID", prompt.ID.String()))
+			return err
 		}
 
+		prompt.Images = placeholderImages
 		return nil
 	})
 
@@ -135,10 +202,10 @@ func (r *gormPromptRepository) UpdatePlaceholderImages(ctx context.Context, exte
 	}
 
 	if finalErr != nil {
-		r.logger.Error("Image update operation failed", zap.Error(finalErr))
+		// This error did not stop the transaction
+		r.logger.Error("Image update operation failed", zap.Error(finalErr), zap.String("externalPromptID", externalPromptID.String()))
 		return nil, finalErr
 	}
 
-	// Success!
 	return &prompt, nil
 }
