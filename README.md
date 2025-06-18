@@ -102,10 +102,100 @@ While the current app is functional and showcase-ready, I plan to add:
 * ⚙️ **Settings Page**
   * Change password, email, and manage account preferences
 
+
 ## 🧰 Project Setup
 
-... PLEASE COMPLETE THIS...
+To get WonderPicAI up and running, follow these steps:
 
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+  * **Go (Golang)**: The backend is built with Go.
+  * **[ComfyUI](https://www.comfy.org/)**: An open-source image generation system. WonderPicAI interacts with it via ComfyLite.
+  * **[ComfyLite](https://github.com/CP-Payne/ComfyLite)**: A lightweight Go-based REST API wrapper for ComfyUI. This acts as the bridge between WonderPicAI and ComfyUI.
+  * **Docker** (Optional, but recommended for database setup): If you plan to use `docker-compose.yml` for the PostgreSQL database.
+
+### Installation and Setup
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/CP-Payne/wonderpicai.git
+    cd wonderpicai/WonderPicAI-development
+    ```
+
+2.  **Set up the database (using Docker Compose):**
+    If you have Docker installed, you can easily spin up a PostgreSQL database:
+
+    ```bash
+    docker-compose up -d db
+    ```
+
+    This will start a PostgreSQL container named `postgres-db` with the following default credentials:
+
+      * **Database**: `wonderpicai_db`
+      * **User**: `postgres`
+      * **Password**: `postgres`
+        You can customize these in `docker-compose.yml`. The application's `main.go` connects to the database using a DSN, which is constructed from environment variables (see `internal/config/config.go`).
+
+3.  **Configure Environment Variables:**
+    Create a `.env` file in the root of the project (`WonderPicAI-development/`) based on `internal/config/config.go`. At minimum, you'll need to configure database, JWT, and ComfyLite settings.
+
+    ```
+    APP_ENV=development
+    PORT=8080
+    LOG_LEVEL=debug
+
+    DB_HOST=localhost
+    DB_PORT=5432
+    DB_USER=postgres
+    DB_PASSWORD=postgres
+    DB_NAME=wonderpicai_db
+    DB_SSLMODE=disable
+    DB_TIMEZONE=UTC
+
+    JWT_SECRET_KEY="your_jwt_secret_key_here_at_least_32_bytes_long"
+    JWT_ISSUER=wonderpicai
+    JWT_EXPIRY_MINUTES=60
+
+    COMFYLITE_HOST=127.0.0.1
+    COMFYLITE_PORT=8081
+
+    STRIPE_SECRET=your_stripe_secret_key
+    STRIPE_WEBHOOK_VERIFICATION_SECRET=your_stripe_webhook_secret
+
+    GOOGLE_CLIENT_SECRET=your_google_client_secret
+    ```
+
+    Replace placeholder values with your actual secrets. For `JWT_SECRET_KEY`, ensure it's a strong, randomly generated string at least 32 bytes long. The application is still runnable without configuring `stripe`, `comfylite`, and `google` related environment variables, however, the Stripe integration, image generation, and google SigniIn in features will not work. You will be able to log in manually, view previously generated images (for a new setup there will not be any images unless you add it manually to the database), view the credits page and view the landing page.
+
+
+4.  **Install Go dependencies:**
+    Navigate to the project root and download the Go modules:
+
+    ```bash
+    go mod tidy
+    ```
+
+5.  **(Optionally) Install Frontend Dependencies (if you want to modify frontend assets):**
+    The frontend uses TailwindCSS and daisyUI, managed via Node.js. If you plan to make changes to the CSS, you'll need Node.js and npm/yarn installed.
+
+    ```bash
+    cd web
+    npm install
+    ```
+
+    The project uses `tailwindcss` and `daisyui` as dev dependencies, and `@tailwindcss/cli` as a dependency.
+
+6.  **Run the application:**
+    You can run the Go application directly from the project root:
+
+    ```bash
+    go run cmd/app/main.go
+    ```
+
+    The application will start on the port defined in your `PORT` environment variable (default: `8080`).
 
 
 ## 🧩 About ComfyLite
