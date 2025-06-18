@@ -10,7 +10,7 @@ This portfolio project showcases a modern SSR (server-side rendered) web applica
 The app is fully functional with:
 
 * 🔐 Authentication (email/password & Google Sign-In)
-* 🖼️ Image generation interface powered by AI
+* 🖼️ Image generation and gallery interface powered by AI
 * 💳 Stripe integration for purchasing credits
 * 🧭 Clean UX with toast notifications, error pages, and a dynamic gallery
 
@@ -33,6 +33,7 @@ The app is fully functional with:
 
 * **Architecture:**
   * Ports and Adapters (Hexagonal)
+  * [C4 Model Diagrams](#wonderpicai-c4-model-diagrams)
 
 
 ## 📸 Screenshots
@@ -63,25 +64,20 @@ The app is fully functional with:
 ### Error Page 
 
 ![Error Page](web/static/assets/images/screenshots/errorpage.png) 
-The error message and heading can easily be modified per error. There is also custom toasts, such as success, info, error and warning, which also has customisable text when called. Furthermore, all input from the user are validated. If validation fails, then appropriate messages will be displayed below the input boxes.
+The error message and heading can easily be modified per error. There is also custom toasts (success, info, error, warning), each with customizable text. Furthermore, all input from the user are validated. If validation fails, then appropriate messages will be displayed below the input boxes.
 
 
 ## WonderPicAI C4 Model Diagrams
 
 ### 1. System Context Diagram (Level 1)
-<p align="center">
-  <img src="docs/diagrams/c4/c4-l1-system-context-wonderpicai.drawio.svg" alt="WonderPicAI System Context Diagram" width="800">
-</p>
+![WonderPicAI System Context Diagram](docs/diagrams/c4/c4-l1-system-context-wonderpicai.drawio.svg)
 
 ### 2. Container Diagram (Level 2)
-<p align="center">
-  <img src="docs/diagrams/c4/c4-l2-container-wonderpicai-system.drawio.svg" alt="WonderPicAI Container Diagram" width="900">
-</p>
+![WonderPicAI Container Diagram](docs/diagrams/c4/c4-l2-container-wonderpicai-system.drawio.svg)
 
 ### 3. Component Diagram (Level 3 - SSR Web Application)
-<p align="center">
-  <img src="docs/diagrams/c4/c4-l3-component-ssr-web-application.drawio.svg" alt="API Application Component Diagram" width="1000">
-</p>
+
+![API Application Component Diagram](docs/diagrams/c4/c4-l3-component-ssr-web-application.drawio.svg)
 
 ## 🧠 Key Features
 
@@ -137,7 +133,7 @@ Before you begin, ensure you have the following installed:
       * **Database**: `wonderpicai_db`
       * **User**: `postgres`
       * **Password**: `postgres`
-        You can customize these in `docker-compose.yml`. The application's `main.go` connects to the database using a DSN, which is constructed from environment variables (see `internal/config/config.go`).
+        You can customize these in `docker-compose.yml`. `main.go` connects to the database using a DSN built from environment variables (see `internal/config/config.go`).
 
 3.  **Configure Environment Variables:**
     Create a `.env` file in the root of the project (`WonderPicAI-development/`) based on `internal/config/config.go`. At minimum, you'll need to configure database, JWT, and ComfyLite settings.
@@ -168,7 +164,7 @@ Before you begin, ensure you have the following installed:
     GOOGLE_CLIENT_SECRET=your_google_client_secret
     ```
 
-    Replace placeholder values with your actual secrets. For `JWT_SECRET_KEY`, ensure it's a strong, randomly generated string at least 32 bytes long. The application is still runnable without configuring `stripe`, `comfylite`, and `google` related environment variables, however, the Stripe integration, image generation, and google SigniIn in features will not work. You will be able to log in manually, view previously generated images (for a new setup there will not be any images unless you add it manually to the database), view the credits page and view the landing page.
+    Replace placeholder values with your actual secrets. For `JWT_SECRET_KEY`, ensure it's a strong, randomly generated string at least 32 bytes long. The application is still runnable without configuring `stripe`, `ComfyLite`, and `google` related environment variables, however, the Stripe integration, image generation, and Google Sign-In features will not work. You can log in manually and view previously generated images (in a fresh setup, there won't be any unless you add them manually to the database), view the credits page and view the landing page.
 
 
 4.  **Install Go dependencies:**
@@ -200,7 +196,7 @@ Before you begin, ensure you have the following installed:
 
 ## 🧩 About ComfyLite
 
-[**ComfyLite**](https://github.com/CP-Payne/comfylite) is a lightweight **Go-based REST API wrapper** around [ComfyUI](https://www.comfy.org/), an open-source image generation system.
+[**ComfyLite**](https://github.com/CP-Payne/ComfyLite) is a lightweight **Go-based REST API wrapper** around [ComfyUI](https://www.comfy.org/), an open-source image generation system.
 
 It was created to:
 
