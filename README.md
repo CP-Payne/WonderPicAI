@@ -3,16 +3,18 @@
 A **server-side rendered web application** built in **Go**, allowing users to **generate AI images**, manage a personal gallery, and purchase credits — all within a clean, modular architecture built for scalability and flexibility.
 
 
-## 🚀 Overview
+## 🚀 Overview & Features
 
-This portfolio project showcases a modern SSR (server-side rendered) web application using Go and a modular architecture inspired by **Clean Architecture** and **Ports and Adapters (Hexagonal)** principles.
+**WonderPicAI** is a modern, server-side rendered (SSR) web application built with Go, following a modular architecture inspired by **Clean Architecture** and **Ports and Adapters (Hexagonal)** principles.
 
-The app is fully functional with:
+It is a fully functional, production-style project designed to showcase real-world engineering practices. The application includes:
 
-* 🔐 Authentication (email/password & Google Sign-In)
-* 🖼️ Image generation and gallery interface powered by AI
-* 💳 Stripe integration for purchasing credits
-* 🧭 Clean UX with toast notifications, error pages, and a dynamic gallery
+* 🔐 **Authentication** – Login/Register with email-password or Google Sign-In (JWT-based)
+* 🖼️ **AI Image Generation & Gallery** – Users can generate images using AI via a modular interface powered by [ComfyLite](https://github.com/CP-Payne/ComfyLite), and view them in a personal gallery
+* 💳 **Credits System** – Stripe integration for purchasing generation credits
+* 🧩 **Modular Design** – Components (e.g., AI generation backend) are swappable thanks to interface-driven architecture
+* ✉️ **Toasts & Error Pages** – Custom UI feedback through toast notifications and friendly error pages
+* 🧭 **Clean UX** – Minimalist design with HTMX interactivity and TailwindCSS styling
 
 
 
@@ -79,14 +81,6 @@ The error message and heading can easily be modified per error. There is also cu
 
 ![API Application Component Diagram](docs/diagrams/c4/c4-l3-component-ssr-web-application.drawio.svg)
 
-## 🧠 Key Features
-
-* 🧩 **Modular Architecture** – Built using interfaces, ensuring that components like AI generation can be swapped without changing the core app.
-* 🖼️ **ComfyLite API** – A lightweight, modular API for [ComfyUI](https://www.comfy.org/), designed to be easily replaceable or upgradable.
-* 🔒 **Authentication** – Login/Register with password or Google Sign-In (JWT-based)
-* 💳 **Credits System** – Stripe integration for purchasing generation credits
-* 🖍️ **Gallery** – Each user has a personal gallery to view previously generated images
-* ✉️ **Toasts & Error Pages** – User feedback via UI notifications and graceful error handling
 
 
 ## 🔄 Planned Enhancements
